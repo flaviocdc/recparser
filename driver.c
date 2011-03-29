@@ -8,6 +8,7 @@ extern FILE *outfile;
 extern char *filename;
 
 static int token;
+static CommListNode *commandl();
 
 static void match(int next) {
   if (token != next) {
@@ -75,6 +76,21 @@ static Command *command() {
       break;
     }
     
+    case '{': {
+      this->tag = COMMAND_BLOCK;
+
+      token = yylex();
+
+      if (token != '}') {
+        ALLOC(this->u.block, Block);
+        this->u.block->comms = commandl();
+      }
+
+      match('}');
+
+      break;
+    }
+    
     case ';': {
       token = yylex();
       this->tag = COMMAND_BLOCK;
@@ -99,7 +115,7 @@ static CommListNode *commandl() {
     first->next = NULL;
   }
   curr = first;
-  while(token) {
+  while(token && token != '}') {
     CommListNode *next;
     ALLOC(next, CommListNode);
     next->comm = command();
