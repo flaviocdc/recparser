@@ -195,6 +195,9 @@ void print_var(Var* v) {
 }
 
 void print_exp(Exp* e) {
+  if (!e)
+    return;
+
   switch(e->tag) {
     case EXP_INT:
       fprintf(outfile, "%i", e->u.ival);
