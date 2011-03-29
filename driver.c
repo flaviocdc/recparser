@@ -9,13 +9,57 @@ extern char *filename;
 
 static int token;
 
+static void match(int next) {
+  if (token != next) {
+    printf("missing token: %c\n", next);
+    exit(0);
+  }
+
+  token = yylex();
+}
+
+static Exp* expr() {
+  return NULL;
+}
+
 static Command *command() {
   Command *this;
   ALLOC(this, Command);
-  this->tag = COMMAND_RET;
-  this->line = yylineno;
-  this->u.ret = NULL;
-  token = yylex();
+
+  switch (token) {
+    case TK_IF: {
+      this->tag = COMMAND_IF;
+      
+      token = yylex();
+      match('(');
+
+      this->u.cif.exp = expr();
+
+      match(')');
+
+      this->u.cif.comm = command();
+
+      if (token == TK_ELSE) {
+        token = yylex();
+        this->u.cif.celse = command();
+      }
+
+      break;
+    }
+    
+    case ';': {
+      token = yylex();
+      this->tag = COMMAND_BLOCK;
+      break;
+    }
+   
+    default: {
+      printf("invalid command in line %i\n", yylineno);
+      exit(0);
+    }
+
+  }  
+
   return this;
 }
 
@@ -30,8 +74,8 @@ static CommListNode *commandl() {
   while(token) {
     CommListNode *next;
     ALLOC(next, CommListNode);
-	next->comm = command();
-	next->next = NULL;
+    next->comm = command();
+    next->next = NULL;
     curr->next = next;
     curr = next;
   }
