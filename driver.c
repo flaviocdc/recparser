@@ -60,6 +60,20 @@ static Command *command() {
       this->u.cwhile.comm=command();
       break;
     }
+
+    case TK_RETURN: {
+      this->tag = COMMAND_RET;
+
+      token = yylex();
+
+      if (token != ';') {
+        this->u.ret = expr();
+      }
+      
+      match(';');
+
+      break;
+    }
     
     case ';': {
       token = yylex();
