@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "decl.h"
 #include "ast.h"
 
@@ -72,6 +73,40 @@ static Command *command() {
       }
       
       match(';');
+
+      break;
+    }
+
+    case TK_ID: {
+      char *name;
+
+      ALLOCS(name, strlen(yyval.sval) + 1);
+      strncpy(name, yyval.sval, strlen(yyval.sval));
+
+      token = yylex();
+
+      if (token == '=') { /* Attr */
+        this->tag = COMMAND_ATTR;
+        ALLOC(this->u.attr.lvalue, Var);
+        this->u.attr.lvalue->name = name;
+
+        token = yylex();
+
+        this->u.attr.rvalue = expr();
+
+        match(';');
+      } else if (token == '(') {
+        this->tag = COMMAND_FUNCALL;
+        ALLOC(this->u.funcall, Exp);
+        this->u.funcall->tag = EXP_FUNCALL;
+        this->u.funcall->u.funcall.name = name;
+
+        token = yylex();
+
+        match(')'); match(';');
+      } else {
+        printf("invalid command, funcall or attr");
+      }
 
       break;
     }
