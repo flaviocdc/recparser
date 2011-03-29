@@ -46,6 +46,20 @@ static Command *command() {
 
       break;
     }
+
+    case TK_WHILE: {
+      this->tag = COMMAND_WHILE;
+
+      token = yylex();
+      match('(');
+
+      this->u.cwhile.exp = expr();
+
+      match(')');
+
+      this->u.cwhile.comm=command();
+      break;
+    }
     
     case ';': {
       token = yylex();
