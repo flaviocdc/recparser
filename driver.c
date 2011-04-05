@@ -5,6 +5,7 @@
 #include "ast.h"
 
 #define NEXT() token = yylex();
+#define NO_BINOP 4
 
 extern int yylineno;
 extern FILE *outfile;
@@ -12,8 +13,7 @@ extern char *filename;
 
 static int token;
 static CommListNode *commandl();
-static Exp* term();
-static Exp* factor();
+static Exp* simple();
 
 static void match(int next) {
   if (token != next) {
@@ -24,20 +24,41 @@ static void match(int next) {
   NEXT();
 }
 
-static Exp* expr() {
-  Exp *exp1 = term();
+static int pri[] = {
+  1, /* + */
+  1, /* - */
+  2, /* * */
+  2, /* / */
+  0
+};
 
-  while (token == '+' || token == '-') {
+static int binop(int token) {
+  switch (token) {
+    case '+' : return 0;
+    case '-' : return 1;
+    case '*' : return 2;
+    case '/' : return 3;
+    default : return NO_BINOP;
+  }
+}
+
+static Exp* expr(int level) {
+  Exp *exp1 = simple();
+
+  int op = binop(token);
+
+  while (op != NO_BINOP && pri[op] > level) {
     Exp *new, *exp2;
 
-    int op = token;
+    int token_op = token;
 
     NEXT();
-    exp2 = term();
+    exp2 = expr(pri[op]);
+    op = binop(token);
 
     ALLOC(new, Exp);
     new->tag = EXP_BINOP;
-    new->u.binop.op = op;
+    new->u.binop.op = token_op;
     new->u.binop.e1 = exp1;
     new->u.binop.e2 = exp2;
 
@@ -47,30 +68,7 @@ static Exp* expr() {
   return exp1;
 }
 
-static Exp* term() {
-  Exp *exp1 = factor();
-
-  while (token == '*' || token == '/') {
-    Exp *new, *exp2;
-
-    int op = token;
-
-    NEXT();
-    exp2 = factor();
-
-    ALLOC(new, Exp);
-    new->tag = EXP_BINOP;
-    new->u.binop.op = op;
-    new->u.binop.e1 = exp1;
-    new->u.binop.e2 = exp2;
-
-    exp1 = new;
-  }
-
-  return exp1;
-}
-
-static Exp* factor() {
+static Exp* simple() {
   Exp *exp;
 
   switch (token) {
@@ -105,7 +103,7 @@ static Exp* factor() {
     case '(': {
       NEXT();
 
-      exp = expr();
+      exp = expr(0);
 
       match(')');
 
@@ -131,7 +129,7 @@ static Command *command() {
       NEXT();
       match('(');
 
-      this->u.cif.exp = expr();
+      this->u.cif.exp = expr(0);
 
       match(')');
 
@@ -151,7 +149,7 @@ static Command *command() {
       NEXT();
       match('(');
 
-      this->u.cwhile.exp = expr();
+      this->u.cwhile.exp = expr(0);
 
       match(')');
 
@@ -165,7 +163,7 @@ static Command *command() {
       NEXT();
 
       if (token != ';') {
-        this->u.ret = expr();
+        this->u.ret = expr(0);
       }
       
       match(';');
@@ -188,7 +186,7 @@ static Command *command() {
 
         NEXT();
 
-        this->u.attr.rvalue = expr();
+        this->u.attr.rvalue = expr(0);
 
         match(';');
       } else if (token == '(') {
