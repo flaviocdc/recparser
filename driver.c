@@ -10,6 +10,8 @@ extern char *filename;
 
 static int token;
 static CommListNode *commandl();
+static Exp* term();
+static Exp* factor();
 
 static void match(int next) {
   if (token != next) {
@@ -21,7 +23,96 @@ static void match(int next) {
 }
 
 static Exp* expr() {
-  return NULL;
+  Exp *exp1 = term();
+
+  while (token == '+' || token == '-') {
+    Exp *new, *exp2;
+
+    int op = token;
+
+    token = yylex();
+    exp2 = term();
+
+    ALLOC(new, Exp);
+    new->tag = EXP_BINOP;
+    new->u.binop.op = op;
+    new->u.binop.e1 = exp1;
+    new->u.binop.e2 = exp2;
+
+    exp1 = new;
+  }
+
+  return exp1;
+}
+
+static Exp* term() {
+  Exp *exp1 = factor();
+
+  while (token == '*' || token == '/') {
+    Exp *new, *exp2;
+
+    int op = token;
+
+    token = yylex();
+    exp2 = factor();
+
+    ALLOC(new, Exp);
+    new->tag = EXP_BINOP;
+    new->u.binop.e1 = exp1;
+    new->u.binop.e2 = exp2;
+
+    exp1 = new;
+  }
+
+  return exp1;
+}
+
+static Exp* factor() {
+  Exp *exp;
+
+  switch (token) {
+    case TK_ID: {
+      Var *var;
+      char *name;
+
+      ALLOC(exp, Exp);
+      ALLOC(var, Var);
+      ALLOCS(name, strlen(yyval.sval) + 1);
+
+      strcpy(name, yyval.sval);
+      var->name = name;
+
+      exp->tag = EXP_VAR;
+      exp->u.var = var;
+
+      token = yylex();
+
+      break;
+    }
+    case TK_INT: {
+      ALLOC(exp, Exp);
+
+      exp->tag = EXP_INT;
+      exp->u.ival = yyval.ival;
+
+      token = yylex();
+
+      break;
+    }
+    case '(': {
+      token = yylex();
+
+      exp = expr();
+
+      match(')');
+
+      break;
+    }
+    default:
+      printf("Expressao invalida\n");
+      exit(1);
+      break;
+  }
 }
 
 static Command *command() {
@@ -81,7 +172,7 @@ static Command *command() {
       char *name;
 
       ALLOCS(name, strlen(yyval.sval) + 1);
-      strncpy(name, yyval.sval, strlen(yyval.sval));
+      strcpy(name, yyval.sval);
 
       token = yylex();
 
