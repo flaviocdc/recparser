@@ -4,6 +4,8 @@
 #include "decl.h"
 #include "ast.h"
 
+#define NEXT() token = yylex();
+
 extern int yylineno;
 extern FILE *outfile;
 extern char *filename;
@@ -19,7 +21,7 @@ static void match(int next) {
     exit(0);
   }
 
-  token = yylex();
+  NEXT();
 }
 
 static Exp* expr() {
@@ -30,7 +32,7 @@ static Exp* expr() {
 
     int op = token;
 
-    token = yylex();
+    NEXT();
     exp2 = term();
 
     ALLOC(new, Exp);
@@ -53,7 +55,7 @@ static Exp* term() {
 
     int op = token;
 
-    token = yylex();
+    NEXT();
     exp2 = factor();
 
     ALLOC(new, Exp);
@@ -86,7 +88,7 @@ static Exp* factor() {
       exp->tag = EXP_VAR;
       exp->u.var = var;
 
-      token = yylex();
+      NEXT();
 
       break;
     }
@@ -96,12 +98,12 @@ static Exp* factor() {
       exp->tag = EXP_INT;
       exp->u.ival = yyval.ival;
 
-      token = yylex();
+      NEXT();
 
       break;
     }
     case '(': {
-      token = yylex();
+      NEXT();
 
       exp = expr();
 
@@ -126,7 +128,7 @@ static Command *command() {
     case TK_IF: {
       this->tag = COMMAND_IF;
       
-      token = yylex();
+      NEXT();
       match('(');
 
       this->u.cif.exp = expr();
@@ -136,7 +138,7 @@ static Command *command() {
       this->u.cif.comm = command();
 
       if (token == TK_ELSE) {
-        token = yylex();
+        NEXT();
         this->u.cif.celse = command();
       }
 
@@ -146,7 +148,7 @@ static Command *command() {
     case TK_WHILE: {
       this->tag = COMMAND_WHILE;
 
-      token = yylex();
+      NEXT();
       match('(');
 
       this->u.cwhile.exp = expr();
@@ -160,7 +162,7 @@ static Command *command() {
     case TK_RETURN: {
       this->tag = COMMAND_RET;
 
-      token = yylex();
+      NEXT();
 
       if (token != ';') {
         this->u.ret = expr();
@@ -177,14 +179,14 @@ static Command *command() {
       ALLOCS(name, strlen(yyval.sval) + 1);
       strcpy(name, yyval.sval);
 
-      token = yylex();
+      NEXT();
 
       if (token == '=') { /* Attr */
         this->tag = COMMAND_ATTR;
         ALLOC(this->u.attr.lvalue, Var);
         this->u.attr.lvalue->name = name;
 
-        token = yylex();
+        NEXT();
 
         this->u.attr.rvalue = expr();
 
@@ -195,7 +197,7 @@ static Command *command() {
         this->u.funcall->tag = EXP_FUNCALL;
         this->u.funcall->u.funcall.name = name;
 
-        token = yylex();
+        NEXT();
 
         match(')'); match(';');
       } else {
@@ -208,7 +210,7 @@ static Command *command() {
     case '{': {
       this->tag = COMMAND_BLOCK;
 
-      token = yylex();
+      NEXT();
 
       if (token != '}') {
         ALLOC(this->u.block, Block);
@@ -221,7 +223,7 @@ static Command *command() {
     }
     
     case ';': {
-      token = yylex();
+      NEXT();
       this->tag = COMMAND_BLOCK;
       break;
     }
@@ -273,7 +275,7 @@ int main(int argc, char **argv) {
   yylineno = 1;
   outfile = stdout;
   filename = "stdout";
-  token = yylex();
+  NEXT();
   commands = commandl();
   print_commlist(0, commands);
 }
