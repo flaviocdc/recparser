@@ -17,6 +17,8 @@ return ;
 
 bla = (10 + 2 / (10 * 3) + foo/bar) ;
 
+vamola = 1 == 2;
+
 foo();
 
 while (vamola + oops) {

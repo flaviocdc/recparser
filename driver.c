@@ -5,7 +5,7 @@
 #include "ast.h"
 
 #define NEXT() token = yylex();
-#define NO_BINOP 4
+#define NO_BINOP -1
 
 extern int yylineno;
 extern FILE *outfile;
@@ -25,19 +25,19 @@ static void match(int next) {
 }
 
 static int pri[] = {
-  1, /* + */
-  1, /* - */
-  2, /* * */
-  2, /* / */
+  3, /* + - */
+  7, /* * / */
+  1, /* == */
   0
 };
 
 static int binop(int token) {
   switch (token) {
     case '+' : return 0;
-    case '-' : return 1;
-    case '*' : return 2;
-    case '/' : return 3;
+    case '-' : return 0;
+    case '*' : return 1;
+    case '/' : return 1;
+    case TK_EQ : return 2;
     default : return NO_BINOP;
   }
 }
