@@ -1,9 +1,27 @@
 ;
 ;
-if () { while(); bla = ; } ;
-if ( ) { return ; } else ;
-if ( ) if () ; else ;
+if (foo) { 
+  while(1);
+  bla = foo;
+};
+
+if (i1 + 50 * 3){ 
+  return;
+} else ;
+
+if ( (10 * 3) * i4 )
+  if (0) ;
+  else ;
+
 return ;
-bla = ;
+
+bla = (10 + 2 / (10 * 3) + foo/bar) ;
+
 foo();
-while () { vamola(); } if (); else {}
+
+while (vamola + oops) {
+  vamola();
+} 
+
+if (crap) ;
+else {}

@@ -58,6 +58,7 @@ static Exp* term() {
 
     ALLOC(new, Exp);
     new->tag = EXP_BINOP;
+    new->u.binop.op = op;
     new->u.binop.e1 = exp1;
     new->u.binop.e2 = exp2;
 
@@ -113,6 +114,8 @@ static Exp* factor() {
       exit(1);
       break;
   }
+
+  return exp;
 }
 
 static Command *command() {
