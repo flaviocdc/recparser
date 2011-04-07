@@ -26,10 +26,10 @@ static void match(int next) {
 
 static struct { int left; int right; } 
 pri[] = {
-  { 3, 3  }, /* + - */
-  { 7, 7  }, /* * / */
-  { 1, 1  }, /* == */
-  { 10, 9 } /* ^ */
+  { 3, 3 }, /* + - */
+  { 4, 4 }, /* * / */
+  { 1, 1 }, /* == */
+  { 5, 4 } /* ^ */
 };
 
 static int binop(int token) {
