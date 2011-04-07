@@ -39,6 +39,8 @@ int alloc_sval = 0;
 
 [-]		{ return '-'; }
 
+[\^]   { return '^'; }
+
 "=="		{ return TK_EQ; }
 
 "!="		{ return TK_NEQ; }

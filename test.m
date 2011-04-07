@@ -25,5 +25,7 @@ while (vamola + oops) {
   vamola();
 } 
 
-if (crap) ;
+if (crap ^ 2 * 3) ;
 else {}
+
+wtf = 2 ^ 3 * 5 + 5 ^ 10 ^ 2;

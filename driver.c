@@ -24,11 +24,12 @@ static void match(int next) {
   NEXT();
 }
 
-static int pri[] = {
-  3, /* + - */
-  7, /* * / */
-  1, /* == */
-  0
+static struct { int left; int right; } 
+pri[] = {
+  { 3, 3  }, /* + - */
+  { 7, 7  }, /* * / */
+  { 1, 1  }, /* == */
+  { 10, 9 } /* ^ */
 };
 
 static int binop(int token) {
@@ -37,6 +38,7 @@ static int binop(int token) {
     case '-' : return 0;
     case '*' : return 1;
     case '/' : return 1;
+    case '^' : return 3;
     case TK_EQ : return 2;
     default : return NO_BINOP;
   }
@@ -47,13 +49,13 @@ static Exp* expr(int level) {
 
   int op = binop(token);
 
-  while (op != NO_BINOP && pri[op] > level) {
+  while (op != NO_BINOP && pri[op].left > level) {
     Exp *new, *exp2;
 
     int token_op = token;
 
     NEXT();
-    exp2 = expr(pri[op]);
+    exp2 = expr(pri[op].right);
     op = binop(token);
 
     ALLOC(new, Exp);
