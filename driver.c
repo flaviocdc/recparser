@@ -6,6 +6,7 @@
 
 #define NEXT() token = yylex();
 #define NO_BINOP -1
+#define NO_UNOP 0
 
 extern int yylineno;
 extern FILE *outfile;
@@ -28,19 +29,32 @@ static struct { int left; int right; }
 pri[] = {
   { 3, 3 }, /* + - */
   { 4, 4 }, /* * / */
-  { 1, 1 }, /* == */
+  { 2, 2 }, /* == < > */
   { 5, 4 } /* ^ */
 };
 
 static int binop(int token) {
   switch (token) {
-    case '+' : return 0;
-    case '-' : return 0;
-    case '*' : return 1;
-    case '/' : return 1;
+    case '+' : 
+    case '-' : 
+      return 0;
+    case '*' :
+    case '/' :
+      return 1;
     case '^' : return 3;
+    case '<' :
+    case '>' : 
+      return 2;
     case TK_EQ : return 2;
     default : return NO_BINOP;
+  }
+}
+
+static int unop(int token) {
+  switch (token) {
+    case '-' : return 4;
+    case '!' : return 2;
+    default : return NO_UNOP;
   }
 }
 
@@ -111,8 +125,28 @@ static Exp* simple() {
 
       break;
     }
+    case '-': {
+      NEXT();
+
+      ALLOC(exp, Exp);
+
+      exp->tag = EXP_NEG;
+      exp->u.exp = expr(unop('-'));
+
+      break;
+    }
+    case '!': {
+      NEXT();
+
+      ALLOC(exp, Exp);
+
+      exp->tag = EXP_LNEG;
+      exp->u.exp = expr(unop('!'));
+
+      break;
+    }
     default:
-      printf("Expressao invalida\n");
+      printf("Expressao invalida %d\n", token);
       exit(1);
       break;
   }

@@ -28,4 +28,8 @@ while (vamola + oops) {
 if (crap ^ 2 * 3) ;
 else {}
 
-wtf = 2 ^ 3 * 5 + 5 ^ 10 ^ 2;
+potencias = 2 ^ 3 * 5 + 5 ^ 10 ^ 2;
+
+prioridadeSinal = -1 * -2 ^ 3;
+
+operadoresLogico = 1 > 2 + 3 ^ -2 * ( 2 > 3 );
