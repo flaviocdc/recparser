@@ -98,14 +98,29 @@ static Exp* simple() {
 
       NEXT();
 
+      // chamada de funcao
       if (token == '(') {
         NEXT();
 
         exp->tag = EXP_FUNCALL;
         exp->u.funcall.name = name;
-        exp->u.funcall.expl = NULL;
+
+        // funcao sem parametro
+        if (token == ')') {
+          exp->u.funcall.expl = NULL;
+        } else {
+          ExpListNode* node;
+          
+          ALLOC(node, ExpListNode);
+
+          node->exp = expr(0);
+          node->next = NULL;
+
+          exp->u.funcall.expl = node;
+        }
 
         match(')');
+
       } else {
         Var *var;
         ALLOC(var, Var);
