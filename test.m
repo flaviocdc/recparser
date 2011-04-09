@@ -33,3 +33,7 @@ potencias = 2 ^ 3 * 5 + 5 ^ 10 ^ 2;
 prioridadeSinal = -1 * -2 ^ 3;
 
 operadoresLogico = 1 > 2 + 3 ^ -2 * ( 2 > 3 );
+
+chamadaDeFuncaoNaExpr = f() + 2 ^ power() + 3 + (foo() / 3); 
+
+opa = 1;

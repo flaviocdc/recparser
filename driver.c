@@ -18,7 +18,7 @@ static Exp* simple();
 
 static void match(int next) {
   if (token != next) {
-    printf("missing token: %c\n", next);
+    printf("expected '%c' but was '%c'\n", next, token);
     exit(0);
   }
 
@@ -89,20 +89,32 @@ static Exp* simple() {
 
   switch (token) {
     case TK_ID: {
-      Var *var;
       char *name;
 
       ALLOC(exp, Exp);
-      ALLOC(var, Var);
       ALLOCS(name, strlen(yyval.sval) + 1);
 
       strcpy(name, yyval.sval);
-      var->name = name;
-
-      exp->tag = EXP_VAR;
-      exp->u.var = var;
 
       NEXT();
+
+      if (token == '(') {
+        NEXT();
+
+        exp->tag = EXP_FUNCALL;
+        exp->u.funcall.name = name;
+        exp->u.funcall.expl = NULL;
+
+        match(')');
+      } else {
+        Var *var;
+        ALLOC(var, Var);
+
+        var->name = name;
+
+        exp->tag = EXP_VAR;
+        exp->u.var = var;
+      }
 
       break;
     }
