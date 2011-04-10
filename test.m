@@ -38,4 +38,6 @@ chamadaDeFuncaoNaExpr = f() + 2 ^ power() + 3 + (foo(1 + 2 * 3) / 3);
 
 chamadaDeFuncaoMuitosParams = f(1, 2, foo(1, 2 ^ 3 + (3 + bar() * 5)));
 
+comandoFuncaoComParametro(1, 2);
+
 opa = 1;

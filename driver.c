@@ -132,6 +132,7 @@ static Exp* simple() {
         if (token == ')') {
           exp->u.funcall.expl = NULL;
         } else {
+          // funcao com parametros
           exp->u.funcall.expl = funcall_params();
         }
 
@@ -275,6 +276,9 @@ static Command *command() {
         this->u.funcall->u.funcall.name = name;
 
         NEXT();
+        if (token != ')') {
+          this->u.funcall->u.funcall.expl = funcall_params();
+        }
 
         match(')'); match(';');
       } else {
