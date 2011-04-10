@@ -84,6 +84,29 @@ static Exp* expr(int level) {
   return exp1;
 }
 
+static ExpListNode* funcall_params() {
+  ExpListNode *root, *node, *prev;
+          
+  ALLOC(root, ExpListNode);
+  root->exp = expr(0);
+  root->next = NULL;
+
+  prev = root;
+
+  while (token == ',') {
+    NEXT();
+  
+    ALLOC(node, ExpListNode);
+    prev->next = node;
+
+    node->exp = expr(0);
+
+    prev = node;
+  }
+
+  return root;
+}
+
 static Exp* simple() {
   Exp *exp;
 
@@ -109,28 +132,7 @@ static Exp* simple() {
         if (token == ')') {
           exp->u.funcall.expl = NULL;
         } else {
-          // funcao com parametros
-          ExpListNode *root, *node, *prev;
-          
-          ALLOC(root, ExpListNode);
-
-          root->exp = expr(0);
-          root->next = NULL;
-
-          prev = root;
-
-          while (token == ',') {
-            NEXT();
-
-            ALLOC(node, ExpListNode);
-            prev->next = node;
-
-            node->exp = expr(0);
-
-            prev = node;
-          }
-
-          exp->u.funcall.expl = root;
+          exp->u.funcall.expl = funcall_params();
         }
 
         match(')');
