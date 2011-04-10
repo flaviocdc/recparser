@@ -4,7 +4,9 @@
 #include "decl.h"
 #include "ast.h"
 
-#define NEXT() token = yylex();
+#define NEXT() token = yylex()
+#define EXTRACT_NAME(var) ALLOCS(var, strlen(yyval.sval) + 1);  strcpy(var, yyval.sval);
+
 #define NO_BINOP -1
 #define NO_UNOP 0
 
@@ -115,9 +117,7 @@ static Exp* simple() {
       char *name;
 
       ALLOC(exp, Exp);
-      ALLOCS(name, strlen(yyval.sval) + 1);
-
-      strcpy(name, yyval.sval);
+      EXTRACT_NAME(name);
 
       NEXT();
 
@@ -128,8 +128,8 @@ static Exp* simple() {
         exp->tag = EXP_FUNCALL;
         exp->u.funcall.name = name;
 
-        // funcao sem parametro
         if (token == ')') {
+          // funcao sem parametro
           exp->u.funcall.expl = NULL;
         } else {
           // funcao com parametros
@@ -254,8 +254,7 @@ static Command *command() {
     case TK_ID: {
       char *name;
 
-      ALLOCS(name, strlen(yyval.sval) + 1);
-      strcpy(name, yyval.sval);
+      EXTRACT_NAME(name);
 
       NEXT();
 
@@ -308,7 +307,7 @@ static Command *command() {
       this->tag = COMMAND_BLOCK;
       break;
     }
-   
+
     default: {
       printf("invalid command in line %i\n", yylineno);
       exit(0);
