@@ -109,14 +109,28 @@ static Exp* simple() {
         if (token == ')') {
           exp->u.funcall.expl = NULL;
         } else {
-          ExpListNode* node;
+          // funcao com parametros
+          ExpListNode *root, *node, *prev;
           
-          ALLOC(node, ExpListNode);
+          ALLOC(root, ExpListNode);
 
-          node->exp = expr(0);
-          node->next = NULL;
+          root->exp = expr(0);
+          root->next = NULL;
 
-          exp->u.funcall.expl = node;
+          prev = root;
+
+          while (token == ',') {
+            NEXT();
+
+            ALLOC(node, ExpListNode);
+            prev->next = node;
+
+            node->exp = expr(0);
+
+            prev = node;
+          }
+
+          exp->u.funcall.expl = root;
         }
 
         match(')');
