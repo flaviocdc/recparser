@@ -85,13 +85,13 @@ static Exp* expr(int level) {
 }
 
 static ExpListNode* funcall_params() {
-  ExpListNode *root, *node, *prev;
+  ExpListNode *head, *node, *prev;
           
-  ALLOC(root, ExpListNode);
-  root->exp = expr(0);
-  root->next = NULL;
+  ALLOC(head, ExpListNode);
+  head->exp = expr(0);
+  head->next = NULL;
 
-  prev = root;
+  prev = head;
 
   while (token == ',') {
     NEXT();
@@ -104,7 +104,7 @@ static ExpListNode* funcall_params() {
     prev = node;
   }
 
-  return root;
+  return head;
 }
 
 static Exp* simple() {
