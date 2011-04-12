@@ -18,6 +18,8 @@ static int token;
 static CommListNode *commandl();
 static Exp* simple();
 
+Type tvoid = { TK_TVOID, 0, 0, NULL };
+
 static void match(int next) {
   if (token != next) {
     printf("expected '%c' but was '%c'\n", next, token);
@@ -109,6 +111,16 @@ static ExpListNode* funcall_params() {
   return head;
 }
 
+static Var* create_var(char* name, ExpListNode* list) {
+  Var *var;
+  ALLOC(var, Var);
+  
+  var->name = name;
+  var->idxs = list;
+  
+  return var;
+}
+
 static Exp* simple() {
   Exp *exp;
 
@@ -122,30 +134,58 @@ static Exp* simple() {
       NEXT();
 
       // chamada de funcao
-      if (token == '(') {
-        NEXT();
+      switch (token) {
+        case '(': {
+          NEXT();
 
-        exp->tag = EXP_FUNCALL;
-        exp->u.funcall.name = name;
+          exp->tag = EXP_FUNCALL;
+          exp->u.funcall.name = name;
 
-        if (token == ')') {
-          // funcao sem parametro
-          exp->u.funcall.expl = NULL;
-        } else {
-          // funcao com parametros
-          exp->u.funcall.expl = funcall_params();
+          if (token == ')') {
+            // funcao sem parametro
+            exp->u.funcall.expl = NULL;
+          } else {
+            // funcao com parametros
+            exp->u.funcall.expl = funcall_params();
+          }
+
+          match(')');
+          break;
         }
-
-        match(')');
-
-      } else {
-        Var *var;
-        ALLOC(var, Var);
-
-        var->name = name;
-
-        exp->tag = EXP_VAR;
-        exp->u.var = var;
+        case '[': {
+          NEXT();
+        
+          ExpListNode *head, *curr, *prev;
+          ALLOC(head, ExpListNode);
+          
+          head->exp = expr(0);
+          head->next = NULL;
+          
+          match(']');
+          
+          prev = head;
+          
+          while (token == '[') {
+            NEXT();
+          
+            ALLOC(curr, ExpListNode);
+            curr->exp = expr(0);
+            curr->next = NULL;
+            
+            prev->next = curr;
+            prev = curr;
+            
+            match(']');
+          }
+          
+          exp->tag = EXP_VAR;
+          exp->u.var = create_var(name, head);
+          break;
+        }
+        default: {
+          exp->tag = EXP_VAR;        
+          exp->u.var = create_var(name, NULL);
+        }
       }
 
       break;

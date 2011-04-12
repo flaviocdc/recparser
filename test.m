@@ -40,4 +40,6 @@ chamadaDeFuncaoMuitosParams = f(1, 2, foo(1, 2 ^ 3 + (3 + bar() * 5)));
 
 comandoFuncaoComParametro(1, 2);
 
+foo = array[0][foo + foo(a+2, i^2)][3];
+
 opa = 1;
