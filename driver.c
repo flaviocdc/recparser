@@ -22,7 +22,13 @@ Type tvoid = { TK_TVOID, 0, 0, NULL };
 
 static void match(int next) {
   if (token != next) {
-    printf("expected '%d' but was '%d'\n", next, token);
+  
+    if (next >= 0 && next <= 255) {
+      printf("expected '%c' but was '%c'\n", next, token);
+    } else {
+      printf("expected '%d' but was '%d'\n", next, token);
+    }
+    
     exit(0);
   }
 
