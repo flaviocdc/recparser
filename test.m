@@ -42,4 +42,6 @@ comandoFuncaoComParametro(1, 2);
 
 foo = array[0][foo + foo(a+2, i^2)][3];
 
+foo[0] = boo;
+
 opa = 1;

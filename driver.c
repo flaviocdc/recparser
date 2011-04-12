@@ -22,7 +22,7 @@ Type tvoid = { TK_TVOID, 0, 0, NULL };
 
 static void match(int next) {
   if (token != next) {
-    printf("expected '%c' but was '%c'\n", next, token);
+    printf("expected '%d' but was '%d'\n", next, token);
     exit(0);
   }
 
@@ -88,29 +88,6 @@ static Exp* expr(int level) {
   return exp1;
 }
 
-static ExpListNode* funcall_params() {
-  ExpListNode *head, *node, *prev;
-          
-  ALLOC(head, ExpListNode);
-  head->exp = expr(0);
-  head->next = NULL;
-
-  prev = head;
-
-  while (token == ',') {
-    NEXT();
-  
-    ALLOC(node, ExpListNode);
-    prev->next = node;
-
-    node->exp = expr(0);
-
-    prev = node;
-  }
-
-  return head;
-}
-
 static Var* create_var(char* name, ExpListNode* list) {
   Var *var;
   ALLOC(var, Var);
@@ -119,6 +96,46 @@ static Var* create_var(char* name, ExpListNode* list) {
   var->idxs = list;
   
   return var;
+}
+
+static ExpListNode* parse_exps(char separator, char match_next) {
+  ExpListNode *head, *node, *prev;
+          
+  ALLOC(head, ExpListNode);
+  head->exp = expr(0);
+  head->next = NULL;
+
+  prev = head;
+  
+  if (match_next != '\0') {
+    match(match_next);
+  }
+
+  while (token == separator) {
+    NEXT();
+  
+    ALLOC(node, ExpListNode);
+    node->exp = expr(0);
+    node->next = NULL;
+    
+    prev->next = node;
+
+    prev = node;
+    
+    if (match_next != '\0') {
+      match(match_next);
+    }
+  }
+
+  return head;
+}
+
+static ExpListNode* funcall_params() {
+  return parse_exps(',', '\0');
+}
+
+static ExpListNode* parse_arrays() {
+  return parse_exps('[', ']');
 }
 
 static Exp* simple() {
@@ -155,31 +172,8 @@ static Exp* simple() {
         case '[': {
           NEXT();
         
-          ExpListNode *head, *curr, *prev;
-          ALLOC(head, ExpListNode);
-          
-          head->exp = expr(0);
-          head->next = NULL;
-          
-          match(']');
-          
-          prev = head;
-          
-          while (token == '[') {
-            NEXT();
-          
-            ALLOC(curr, ExpListNode);
-            curr->exp = expr(0);
-            curr->next = NULL;
-            
-            prev->next = curr;
-            prev = curr;
-            
-            match(']');
-          }
-          
           exp->tag = EXP_VAR;
-          exp->u.var = create_var(name, head);
+          exp->u.var = create_var(name, parse_arrays());
           break;
         }
         default: {
@@ -297,14 +291,27 @@ static Command *command() {
       EXTRACT_NAME(name);
 
       NEXT();
+      
+      ExpListNode* idxs = NULL;
+      if (token == '[') {
+        NEXT();
+        
+        idxs = parse_arrays();
+        
+        if (token != '=') {
+          match('=');
+        }
+      }
 
       if (token == '=') { /* Attr */
         this->tag = COMMAND_ATTR;
-        ALLOC(this->u.attr.lvalue, Var);
-        this->u.attr.lvalue->name = name;
+        this->u.attr.lvalue = create_var(name, NULL);
+        
+        if (idxs)
+          this->u.attr.lvalue->idxs = idxs;
 
         NEXT();
-
+        
         this->u.attr.rvalue = expr(0);
 
         match(';');
