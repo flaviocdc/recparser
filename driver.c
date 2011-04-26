@@ -529,8 +529,8 @@ static CommListNode *commandl() {
 
 int main(int argc, char **argv) {
   FILE *f;
-  //CommListNode* commands;
   DeclrListNode *declrs;
+
   if(argc > 1) {
     f = fopen(argv[1], "r");
     filename = argv[1];
@@ -547,7 +547,7 @@ int main(int argc, char **argv) {
   outfile = stdout;
   filename = "stdout";
   NEXT();
-  //commands = commandl();
+
   declrs = declr_list();
   print_declrlist(0, declrs);
 }
