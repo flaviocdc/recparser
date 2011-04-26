@@ -17,6 +17,7 @@ extern char *filename;
 static int token;
 static CommListNode *commandl();
 static Exp* simple();
+static Block *block();
 
 Type tvoid = { TK_TVOID, 0, 0, NULL };
 
@@ -346,8 +347,7 @@ static Command *command() {
       NEXT();
 
       if (token != '}') {
-        ALLOC(this->u.block, Block);
-        this->u.block->comms = commandl();
+        this->u.block = block();
       }
 
       match('}');
@@ -371,6 +371,143 @@ static Command *command() {
   return this;
 }
 
+static Type* parse_type() {
+  Type* type;
+
+  ALLOC(type, Type);
+  
+  switch (token) {
+    case TK_TINT:    
+    case TK_TCHAR: {
+      type->dimensions = 0;
+      type->type = token;
+      type->sizes = NULL;
+      break; 
+    }
+    default:
+      printf("Declaration error (invalid type)\n");
+      exit(0);
+  }
+
+  NEXT();
+
+  IntListNode *curr;
+
+  if (token == '[') {
+    
+    while (token == '[') {
+      NEXT();
+
+      type->dimensions = type->dimensions + 1;
+
+      ALLOC(curr, IntListNode);
+      curr->next = NULL;
+
+      if (token == TK_INT) {
+        curr->n = yyval.ival;
+        NEXT();
+      } else {
+        curr->n = 0;
+      }
+
+      match(']');
+      if (type->sizes) {
+        IntListNode* last = type->sizes;
+        while(last->next) last = last->next;
+        last->next = curr;
+      } else {
+        type->sizes = curr;
+      }
+    }
+
+  }
+
+  return type;
+}
+
+static Block *block() {
+  Block *block;
+  ALLOC(block, Block);
+
+  block->declrs = NULL;
+  
+  if (token != '}') {
+    block->comms = commandl();
+  } else {
+    block->comms = NULL;
+  }
+
+  return block;
+}
+
+static Declr *declr() {
+  Type *type;
+  type = parse_type();
+
+  char* name;
+  Declr* declr;
+
+  if (token != TK_ID) {
+    printf("Expected TK_ID but found: %d\n", token);
+    exit(0);
+  }
+
+  EXTRACT_NAME(name);
+  NEXT();
+  ALLOC(declr, Declr);
+
+  if (token == '(') {
+
+    declr->tag = DECLR_FUNC;
+    declr->u.func.name = name;
+    declr->u.func.params = NULL;
+
+    NEXT();
+    match(')');
+    match('{'); // TODO tratar prototipos
+
+    declr->u.func.block = block();
+
+    match('}');
+  } else {
+    printf("Declaracao de variavel nao impl.\n");
+    exit(0);
+  }
+
+  declr->type = type;
+
+  return declr;
+}
+
+static int is_type(token) {
+  return token == TK_TINT || token == TK_TCHAR || token == TK_TVOID;
+}
+
+static DeclrListNode *declr_list() {
+  DeclrListNode *first, *curr;
+  if (token && is_type(token)) {
+    ALLOC(first, DeclrListNode);
+    
+    first->declr = declr();
+    first->next = NULL;
+  }
+
+  curr = first;
+  
+  while (token && is_type(token)) {
+    DeclrListNode *next;
+    ALLOC(next, DeclrListNode);
+
+    next->declr = declr();
+    next->next = NULL;
+
+    curr->next = next;
+    curr = next;
+  }
+
+  return first;
+}
+
 static CommListNode *commandl() {
   CommListNode *first, *curr;
   if(token) {
@@ -392,7 +529,8 @@ static CommListNode *commandl() {
 
 int main(int argc, char **argv) {
   FILE *f;
-  CommListNode* commands;
+  //CommListNode* commands;
+  DeclrListNode *declrs;
   if(argc > 1) {
     f = fopen(argv[1], "r");
     filename = argv[1];
@@ -409,6 +547,7 @@ int main(int argc, char **argv) {
   outfile = stdout;
   filename = "stdout";
   NEXT();
-  commands = commandl();
-  print_commlist(0, commands);
+  //commands = commandl();
+  declrs = declr_list();
+  print_declrlist(0, declrs);
 }
