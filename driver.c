@@ -6,6 +6,7 @@
 
 #define NEXT() token = yylex()
 #define EXTRACT_NAME(var) ALLOCS(var, strlen(yyval.sval) + 1);  strcpy(var, yyval.sval);
+#define SYNTAX_ERROR(format, args...) printf(format , ## args); exit(1);
 
 #define NO_BINOP -1
 #define NO_UNOP 0
@@ -25,12 +26,10 @@ static void match(int next) {
   if (token != next) {
   
     if (next >= 0 && next <= 255) {
-      printf("expected '%c' but was '%c'\n", next, token);
+      SYNTAX_ERROR("expected '%c' but was '%c'\n", next, token);
     } else {
-      printf("expected '%d' but was '%d'\n", next, token);
+      SYNTAX_ERROR("expected '%d' but was '%d'\n", next, token);
     }
-    
-    exit(0);
   }
 
   NEXT();
@@ -231,9 +230,7 @@ static Exp* simple() {
       break;
     }
     default:
-      printf("Expressao invalida %d\n", token);
-      exit(1);
-      break;
+      SYNTAX_ERROR("Invalid expression %d\n", token);
   }
 
   return exp;
@@ -362,8 +359,7 @@ static Command *command() {
     }
 
     default: {
-      printf("invalid command in line %i\n", yylineno);
-      exit(0);
+      SYNTAX_ERROR("invalid command in line %i\n", yylineno);
     }
 
   }  
@@ -385,8 +381,7 @@ static Type* parse_type() {
       break; 
     }
     default:
-      printf("Declaration error (invalid type)\n");
-      exit(0);
+      SYNTAX_ERROR("Declaration error (invalid type)\n");
   }
 
   NEXT();
@@ -448,8 +443,7 @@ static Declr *declr() {
   Declr* declr;
 
   if (token != TK_ID) {
-    printf("Expected TK_ID but found: %d\n", token);
-    exit(0);
+    SYNTAX_ERROR("Expected TK_ID but found: %d\n", token);
   }
 
   EXTRACT_NAME(name);
@@ -464,14 +458,17 @@ static Declr *declr() {
 
     NEXT();
     match(')');
-    match('{'); // TODO tratar prototipos
 
-    declr->u.func.block = block();
-
-    match('}');
+    if (token == '{') {
+      declr->u.func.block = block();
+      match('}');
+    } else if (token == ';') {
+      declr->u.func.block = NULL;
+    } else { 
+      SYNTAX_ERROR("Invalid function declaration: %s\n", name);
+    }
   } else {
-    printf("Declaracao de variavel nao impl.\n");
-    exit(0);
+    SYNTAX_ERROR("Declaracao de variavel nao impl.\n");
   }
 
   declr->type = type;
