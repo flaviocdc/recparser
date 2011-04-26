@@ -30,6 +30,8 @@ static void match(int next) {
     } else {
       SYNTAX_ERROR("expected '%d' but was '%d'\n", next, token);
     }
+
+    exit(0);
   }
 
   NEXT();
@@ -231,6 +233,7 @@ static Exp* simple() {
     }
     default:
       SYNTAX_ERROR("Invalid expression %d\n", token);
+      break;
   }
 
   return exp;
@@ -458,15 +461,11 @@ static Declr *declr() {
 
     NEXT();
     match(')');
+    match('{');
 
-    if (token == '{') {
-      declr->u.func.block = block();
-      match('}');
-    } else if (token == ';') {
-      declr->u.func.block = NULL;
-    } else { 
-      SYNTAX_ERROR("Invalid function declaration: %s\n", name);
-    }
+    declr->u.func.block = block();
+
+    match('}');
   } else {
     SYNTAX_ERROR("Declaracao de variavel nao impl.\n");
   }
