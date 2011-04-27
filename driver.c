@@ -11,6 +11,9 @@
 
 #define NO_BINOP -1
 #define NO_UNOP 0
+#define INSIDE_FUNC 1
+#define NOT_INSIDE_FUNC 0
+
 
 extern int yylineno;
 extern FILE *outfile;
@@ -21,6 +24,7 @@ static CommListNode *commandl();
 static Exp* simple();
 static Block *block();
 static int is_type(int token);
+static DeclrListNode *declr_list(int inside_function);
 
 Type tvoid = { TK_TVOID, 0, 0, NULL };
 
@@ -435,6 +439,7 @@ static Block *block() {
   block->declrs = NULL;
   
   if (token != '}') {
+    block->declrs = declr_list(INSIDE_FUNC);
     block->comms = commandl();
   } else {
     block->comms = NULL;
@@ -443,7 +448,7 @@ static Block *block() {
   return block;
 }
 
-static Declr *declr(DeclrListNode *head) {
+static Declr *declr(DeclrListNode *head, int inside_func) {
   Type *type;
   type = parse_type();
 
@@ -462,6 +467,11 @@ static Declr *declr(DeclrListNode *head) {
 
   switch (token) {
     case '(': {
+      
+      if (inside_func) {
+        SYNTAX_ERROR("Nesting function declaration is not allowed\n");
+      }
+
       declr->tag = DECLR_FUNC;
       declr->u.func.name = name;
 
@@ -590,12 +600,15 @@ static int is_type(int token) {
   return token == TK_TINT || token == TK_TCHAR || token == TK_TVOID;
 }
 
-static DeclrListNode *declr_list() {
+static DeclrListNode *declr_list(int inside_function) {
   DeclrListNode *first, *curr;
   if (token && is_type(token)) {
     ALLOC(first, DeclrListNode);
     
-    first->declr = declr(first);
+    first->declr = declr(first, inside_function);
+  } else if (inside_function) {
+    // funcoes podem nao ter variaveis declaradas dentro dela
+    return NULL;
   }
   
   curr = first;
@@ -605,7 +618,7 @@ static DeclrListNode *declr_list() {
     DeclrListNode *new;
     ALLOC(new, DeclrListNode);
 
-    new->declr = declr(new);
+    new->declr = declr(new, inside_function);
 
     curr->next = new;
     LAST_NODE(new);
@@ -657,6 +670,6 @@ int main(int argc, char **argv) {
   filename = "stdout";
   NEXT();
 
-  declrs = declr_list();
+  declrs = declr_list(NOT_INSIDE_FUNC);
   print_declrlist(0, declrs);
 }
