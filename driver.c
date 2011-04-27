@@ -537,7 +537,6 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
       else if (token == TK_MANY) {
         // se for varargs, precisa ser o ultimo
         NEXT();
-        //match(')');
 
         ALLOC(declr->u.func.params, DeclrListNode);
       }
@@ -546,11 +545,15 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
       }
 
       match(')');
-      match('{');
 
-      declr->u.func.block = block();
-
-      match('}');
+      if (token == '{') {
+        match('{');
+        declr->u.func.block = block();
+        match('}');
+      } else {
+        declr->u.func.block = NULL;
+        match(';');
+      }
 
       break;
     }

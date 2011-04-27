@@ -24,3 +24,5 @@ int varargs_unico(...) {
 int varargs_ultimo(int a, ...) {
   foo();
 }
+
+int prototype();
