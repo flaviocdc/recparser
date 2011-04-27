@@ -500,6 +500,17 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
         iparm = hparm;
         while (token == ',') { 
           NEXT();
+            
+          if (token == TK_MANY) {
+            ALLOC(iparm->next, DeclrListNode);
+
+            iparm->next->declr = NULL;
+            iparm->next->next = NULL;
+
+            NEXT();
+
+            break;
+          }
 
           if (!is_type(token)) {
             SYNTAX_ERROR("expected a type but found %d", token);
@@ -522,6 +533,13 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
         }
 
         declr->u.func.params = hparm;
+      }
+      else if (token == TK_MANY) {
+        // se for varargs, precisa ser o ultimo
+        NEXT();
+        //match(')');
+
+        ALLOC(declr->u.func.params, DeclrListNode);
       }
       else {
         declr->u.func.params = NULL;

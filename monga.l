@@ -29,6 +29,8 @@ int alloc_sval = 0;
 
 "void"		{ return TK_TVOID; }
 
+"..."    {return TK_MANY; }
+
 [=]		{ return '='; }
 
 [*]		{ return '*'; }

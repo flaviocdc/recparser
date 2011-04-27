@@ -15,5 +15,12 @@ int func_com_decl_var(int a, char b) {
   int b1, b2;
 
   foo();
+}
 
+int varargs_unico(...) {
+  foo();
+}
+
+int varargs_ultimo(int a, ...) {
+  foo();
 }

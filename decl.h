@@ -20,6 +20,7 @@
 #define TK_GEQ		1015
 #define TK_AND		1016
 #define TK_OR		1017
+#define TK_MANY         276
 
 #define ERR_SCAN	-1001
 #define ERR_MEM		-1002
