@@ -20,6 +20,7 @@ static int token;
 static CommListNode *commandl();
 static Exp* simple();
 static Block *block();
+static int is_type(int token);
 
 Type tvoid = { TK_TVOID, 0, 0, NULL };
 
@@ -463,9 +464,59 @@ static Declr *declr(DeclrListNode *head) {
     case '(': {
       declr->tag = DECLR_FUNC;
       declr->u.func.name = name;
-      declr->u.func.params = NULL; // TODO parametros de funcao
-  
+
       NEXT();
+
+      if (is_type(token)) { // parametro de funcao
+        DeclrListNode *hparm, *cparm, *iparm;
+        Declr *declr_parm;
+        Type *type_parm;
+        
+        ALLOC(hparm, DeclrListNode);
+        ALLOC(declr_parm, Declr);
+
+        type_parm = parse_type();
+        
+        EXTRACT_NAME(name);
+
+        declr_parm->type = type_parm;
+        declr_parm->u.name = name;
+
+        hparm->declr = declr_parm;
+        hparm->next = NULL;
+
+        NEXT();
+
+        iparm = hparm;
+        while (token == ',') { 
+          NEXT();
+
+          if (!is_type(token)) {
+            SYNTAX_ERROR("expected a type but found %d", token);
+          }
+
+          type = parse_type();
+          NEXT();
+          EXTRACT_NAME(name);
+          
+          ALLOC(cparm, DeclrListNode);
+          ALLOC(declr_parm, Declr);
+
+          declr_parm->type = type;
+          declr_parm->u.name = name;
+
+          cparm->declr = declr_parm;
+          cparm->next = NULL;
+          iparm->next = cparm;
+          iparm = cparm;
+        }
+
+        declr->u.func.params = hparm;
+      }
+      else {
+        declr->u.func.params = NULL;
+      }
+
       match(')');
       match('{');
 
@@ -484,7 +535,6 @@ static Declr *declr(DeclrListNode *head) {
       break;
     }
     case ',': {
-      // li a primeira
       declr->tag = DECLR_VAR;
       declr->u.name = name;
       
@@ -536,7 +586,7 @@ static Declr *declr(DeclrListNode *head) {
   return declr;
 }
 
-static int is_type(token) {
+static int is_type(int token) {
   return token == TK_TINT || token == TK_TCHAR || token == TK_TVOID;
 }
 
