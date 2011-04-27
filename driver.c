@@ -498,22 +498,32 @@ static Declr *declr(DeclrListNode *head) {
       Declr *new_declr;
 
       it = head;
-
-      ALLOC(new, DeclrListNode);
-      ALLOC(new_declr, Declr);
-
-      EXTRACT_NAME(name);
-      new_declr->u.name = name;
-      new_declr->tag = DECLR_VAR;
-      new_declr->type = type;
-
-      new->declr = new_declr;
-      new->next = NULL;
-
       LAST_NODE(it);
 
-      it->next = new;
+      while (1) {
+        ALLOC(new, DeclrListNode);
+        ALLOC(new_declr, Declr);
 
+        EXTRACT_NAME(name);
+        new_declr->u.name = name;
+        new_declr->tag = DECLR_VAR;
+        new_declr->type = type;
+
+        new->declr = new_declr;
+        new->next = NULL;
+
+        it->next = new;
+
+        NEXT();
+        
+        if (token == ';') break;
+        if (token == ',') {
+          it = new; 
+          NEXT();
+        }
+      }
+      
+      NEXT();
       break;
     }
     default: {
@@ -536,7 +546,6 @@ static DeclrListNode *declr_list() {
     ALLOC(first, DeclrListNode);
     
     first->declr = declr(first);
-    //first->next = NULL;
   }
   
   curr = first;
@@ -547,7 +556,6 @@ static DeclrListNode *declr_list() {
     ALLOC(new, DeclrListNode);
 
     new->declr = declr(new);
-    new->next = NULL;
 
     curr->next = new;
     LAST_NODE(new);
