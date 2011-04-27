@@ -7,6 +7,7 @@
 #define NEXT() token = yylex()
 #define EXTRACT_NAME(var) ALLOCS(var, strlen(yyval.sval) + 1);  strcpy(var, yyval.sval);
 #define SYNTAX_ERROR(format, args...) printf(format , ## args); exit(1);
+#define LAST_NODE(node) while(node->next) node = node->next;
 
 #define NO_BINOP -1
 #define NO_UNOP 0
@@ -376,6 +377,7 @@ static Type* parse_type() {
   ALLOC(type, Type);
   
   switch (token) {
+    case TK_TVOID:
     case TK_TINT:    
     case TK_TCHAR: {
       type->dimensions = 0;
@@ -411,7 +413,9 @@ static Type* parse_type() {
       match(']');
       if (type->sizes) {
         IntListNode* last = type->sizes;
-        while(last->next) last = last->next;
+
+        LAST_NODE(last);
+
         last->next = curr;
       } else {
         type->sizes = curr;
@@ -438,12 +442,14 @@ static Block *block() {
   return block;
 }
 
-static Declr *declr() {
+static Declr *declr(DeclrListNode *head) {
   Type *type;
   type = parse_type();
 
   char* name;
   Declr* declr;
+
+  head->next = NULL;
 
   if (token != TK_ID) {
     SYNTAX_ERROR("Expected TK_ID but found: %d\n", token);
@@ -476,8 +482,42 @@ static Declr *declr() {
       NEXT();
 
       break;
-    } default: {
-      SYNTAX_ERROR("Declaracao de variavel nao impl.\n");
+    }
+    case ',': {
+      // li a primeira
+      declr->tag = DECLR_VAR;
+      declr->u.name = name;
+      
+      NEXT();
+      
+      if (token != TK_ID) {
+        SYNTAX_ERROR("Was expecting TK_ID but found: %d\n", token);
+      }
+
+      DeclrListNode *new, *it;
+      Declr *new_declr;
+
+      it = head;
+
+      ALLOC(new, DeclrListNode);
+      ALLOC(new_declr, Declr);
+
+      EXTRACT_NAME(name);
+      new_declr->u.name = name;
+      new_declr->tag = DECLR_VAR;
+      new_declr->type = type;
+
+      new->declr = new_declr;
+      new->next = NULL;
+
+      LAST_NODE(it);
+
+      it->next = new;
+
+      break;
+    }
+    default: {
+      SYNTAX_ERROR("Invalid declaration.\n");
     }
   }
 
@@ -495,20 +535,22 @@ static DeclrListNode *declr_list() {
   if (token && is_type(token)) {
     ALLOC(first, DeclrListNode);
     
-    first->declr = declr();
-    first->next = NULL;
+    first->declr = declr(first);
+    //first->next = NULL;
   }
-
+  
   curr = first;
+  LAST_NODE(curr);
   
   while (token && is_type(token)) {
     DeclrListNode *new;
     ALLOC(new, DeclrListNode);
 
-    new->declr = declr();
+    new->declr = declr(new);
     new->next = NULL;
 
     curr->next = new;
+    LAST_NODE(new);
     curr = new;
   }
 
@@ -522,7 +564,9 @@ static CommListNode *commandl() {
     first->comm = command();
     first->next = NULL;
   }
+  
   curr = first;
+
   while(token && token != '}') {
     CommListNode *next;
     ALLOC(next, CommListNode);

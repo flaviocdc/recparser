@@ -61,4 +61,4 @@ int blocosAninhados() {
   foo();
 }
 
-char c;
+char c1, c2;
