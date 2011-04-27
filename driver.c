@@ -454,7 +454,6 @@ static Declr *declr() {
   ALLOC(declr, Declr);
 
   if (token == '(') {
-
     declr->tag = DECLR_FUNC;
     declr->u.func.name = name;
     declr->u.func.params = NULL;
@@ -466,6 +465,11 @@ static Declr *declr() {
     declr->u.func.block = block();
 
     match('}');
+  } else if (token == ';') {
+    declr->tag = DECLR_VAR;
+    declr->u.name = name;
+
+    NEXT();
   } else {
     SYNTAX_ERROR("Declaracao de variavel nao impl.\n");
   }
@@ -491,14 +495,14 @@ static DeclrListNode *declr_list() {
   curr = first;
   
   while (token && is_type(token)) {
-    DeclrListNode *next;
-    ALLOC(next, DeclrListNode);
+    DeclrListNode *new;
+    ALLOC(new, DeclrListNode);
 
-    next->declr = declr();
-    next->next = NULL;
+    new->declr = declr();
+    new->next = NULL;
 
-    curr->next = next;
-    curr = next;
+    curr->next = new;
+    curr = new;
   }
 
   return first;

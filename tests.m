@@ -51,6 +51,8 @@ char acessoArrays() {
   foo[0] = boo;
 }
 
+int x;
+
 int blocosAninhados() {
   {
     hihi();
@@ -58,3 +60,5 @@ int blocosAninhados() {
 
   foo();
 }
+
+char c;
