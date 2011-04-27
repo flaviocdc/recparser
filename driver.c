@@ -453,25 +453,32 @@ static Declr *declr() {
   NEXT();
   ALLOC(declr, Declr);
 
-  if (token == '(') {
-    declr->tag = DECLR_FUNC;
-    declr->u.func.name = name;
-    declr->u.func.params = NULL;
+  switch (token) {
+    case '(': {
+      declr->tag = DECLR_FUNC;
+      declr->u.func.name = name;
+      declr->u.func.params = NULL; // TODO parametros de funcao
+  
+      NEXT();
+      match(')');
+      match('{');
 
-    NEXT();
-    match(')');
-    match('{');
+      declr->u.func.block = block();
 
-    declr->u.func.block = block();
+      match('}');
 
-    match('}');
-  } else if (token == ';') {
-    declr->tag = DECLR_VAR;
-    declr->u.name = name;
+      break;
+    }
+    case ';': {
+      declr->tag = DECLR_VAR;
+      declr->u.name = name;
 
-    NEXT();
-  } else {
-    SYNTAX_ERROR("Declaracao de variavel nao impl.\n");
+      NEXT();
+
+      break;
+    } default: {
+      SYNTAX_ERROR("Declaracao de variavel nao impl.\n");
+    }
   }
 
   declr->type = type;
