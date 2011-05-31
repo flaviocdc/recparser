@@ -5,6 +5,6 @@
 #include "ast.h"
 #include "decl.h"
 
-static DeclrListNode *declr_list(int inside_function);
+DeclrListNode *declr_list(int inside_function);
 
 #endif

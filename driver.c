@@ -3,6 +3,7 @@
 #include <string.h>
 #include "decl.h"
 #include "ast.h"
+#include "driver.h"
 
 #define NEXT() token = yylex()
 #define EXTRACT_NAME(var) ALLOCS(var, strlen(yyval.sval) + 1);  strcpy(var, yyval.sval);
@@ -19,12 +20,12 @@ extern int yylineno;
 extern FILE *outfile;
 extern char *filename;
 
-static int token;
+int token;
+
 static CommListNode *commandl();
 static Exp* simple();
 static Block *block();
 static int is_type(int token);
-static DeclrListNode *declr_list(int inside_function);
 
 Type tvoid = { TK_TVOID, 0, 0, NULL };
 
@@ -82,7 +83,7 @@ static Exp* expr(int level) {
   int op = binop(token);
 
   while (op != NO_BINOP && pri[op].left > level) {
-    Exp *new, *exp2;
+    Exp *new_exp, *exp2;
 
     int token_op = token;
 
@@ -90,13 +91,13 @@ static Exp* expr(int level) {
     exp2 = expr(pri[op].right);
     op = binop(token);
 
-    ALLOC(new, Exp);
-    new->tag = EXP_BINOP;
-    new->u.binop.op = token_op;
-    new->u.binop.e1 = exp1;
-    new->u.binop.e2 = exp2;
+    ALLOC(new_exp, Exp);
+    new_exp->tag = EXP_BINOP;
+    new_exp->u.binop.op = token_op;
+    new_exp->u.binop.e1 = exp1;
+    new_exp->u.binop.e2 = exp2;
 
-    exp1 = new;
+    exp1 = new_exp;
   }
 
   return exp1;
@@ -246,51 +247,51 @@ static Exp* simple() {
 }
 
 static Command *command() {
-  Command *this;
-  ALLOC(this, Command);
+  Command *cmd;
+  ALLOC(cmd, Command);
 
   switch (token) {
     case TK_IF: {
-      this->tag = COMMAND_IF;
+      cmd->tag = COMMAND_IF;
       
       NEXT();
       match('(');
 
-      this->u.cif.exp = expr(0);
+      cmd->u.cif.exp = expr(0);
 
       match(')');
 
-      this->u.cif.comm = command();
+      cmd->u.cif.comm = command();
 
       if (token == TK_ELSE) {
         NEXT();
-        this->u.cif.celse = command();
+        cmd->u.cif.celse = command();
       }
 
       break;
     }
 
     case TK_WHILE: {
-      this->tag = COMMAND_WHILE;
+      cmd->tag = COMMAND_WHILE;
 
       NEXT();
       match('(');
 
-      this->u.cwhile.exp = expr(0);
+      cmd->u.cwhile.exp = expr(0);
 
       match(')');
 
-      this->u.cwhile.comm=command();
+      cmd->u.cwhile.comm=command();
       break;
     }
 
     case TK_RETURN: {
-      this->tag = COMMAND_RET;
+      cmd->tag = COMMAND_RET;
 
       NEXT();
 
       if (token != ';') {
-        this->u.ret = expr(0);
+        cmd->u.ret = expr(0);
       }
       
       match(';');
@@ -317,26 +318,26 @@ static Command *command() {
       }
 
       if (token == '=') { /* Attr */
-        this->tag = COMMAND_ATTR;
-        this->u.attr.lvalue = create_var(name, NULL);
+        cmd->tag = COMMAND_ATTR;
+        cmd->u.attr.lvalue = create_var(name, NULL);
         
         if (idxs)
-          this->u.attr.lvalue->idxs = idxs;
+          cmd->u.attr.lvalue->idxs = idxs;
 
         NEXT();
         
-        this->u.attr.rvalue = expr(0);
+        cmd->u.attr.rvalue = expr(0);
 
         match(';');
       } else if (token == '(') {
-        this->tag = COMMAND_FUNCALL;
-        ALLOC(this->u.funcall, Exp);
-        this->u.funcall->tag = EXP_FUNCALL;
-        this->u.funcall->u.funcall.name = name;
+        cmd->tag = COMMAND_FUNCALL;
+        ALLOC(cmd->u.funcall, Exp);
+        cmd->u.funcall->tag = EXP_FUNCALL;
+        cmd->u.funcall->u.funcall.name = name;
 
         NEXT();
         if (token != ')') {
-          this->u.funcall->u.funcall.expl = funcall_params();
+          cmd->u.funcall->u.funcall.expl = funcall_params();
         }
 
         match(')'); match(';');
@@ -348,12 +349,12 @@ static Command *command() {
     }
     
     case '{': {
-      this->tag = COMMAND_BLOCK;
+      cmd->tag = COMMAND_BLOCK;
 
       NEXT();
 
       if (token != '}') {
-        this->u.block = block();
+        cmd->u.block = block();
       }
 
       match('}');
@@ -363,7 +364,7 @@ static Command *command() {
     
     case ';': {
       NEXT();
-      this->tag = COMMAND_BLOCK;
+      cmd->tag = COMMAND_BLOCK;
       break;
     }
 
@@ -373,7 +374,7 @@ static Command *command() {
 
   }  
 
-  return this;
+  return cmd;
 }
 
 static Type* parse_type() {
@@ -572,14 +573,14 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
         SYNTAX_ERROR("Was expecting TK_ID but found: %d\n", token);
       }
 
-      DeclrListNode *new, *it;
+      DeclrListNode *new_node, *it;
       Declr *new_declr;
 
       it = head;
       LAST_NODE(it);
 
       while (1) {
-        ALLOC(new, DeclrListNode);
+        ALLOC(new_node, DeclrListNode);
         ALLOC(new_declr, Declr);
 
         EXTRACT_NAME(name);
@@ -587,16 +588,16 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
         new_declr->tag = DECLR_VAR;
         new_declr->type = type;
 
-        new->declr = new_declr;
-        new->next = NULL;
+        new_node->declr = new_declr;
+        new_node->next = NULL;
 
-        it->next = new;
+        it->next = new_node;
 
         NEXT();
         
         if (token == ';') break;
         if (token == ',') {
-          it = new; 
+          it = new_node; 
           NEXT();
         }
       }
@@ -618,7 +619,7 @@ static int is_type(int token) {
   return token == TK_TINT || token == TK_TCHAR || token == TK_TVOID;
 }
 
-static DeclrListNode *declr_list(int inside_function) {
+DeclrListNode *declr_list(int inside_function) {
   DeclrListNode *first, *curr;
   if (token && is_type(token)) {
     ALLOC(first, DeclrListNode);
@@ -633,14 +634,14 @@ static DeclrListNode *declr_list(int inside_function) {
   LAST_NODE(curr);
   
   while (token && is_type(token)) {
-    DeclrListNode *new;
-    ALLOC(new, DeclrListNode);
+    DeclrListNode *new_node;
+    ALLOC(new_node, DeclrListNode);
 
-    new->declr = declr(new, inside_function);
+    new_node->declr = declr(new_node, inside_function);
 
-    curr->next = new;
-    LAST_NODE(new);
-    curr = new;
+    curr->next = new_node;
+    LAST_NODE(new_node);
+    curr = new_node;
   }
 
   return first;
@@ -667,6 +668,7 @@ static CommListNode *commandl() {
   return first;
 }
 
+/*
 int main(int argc, char **argv) {
   FILE *f;
   DeclrListNode *declrs;
@@ -691,3 +693,4 @@ int main(int argc, char **argv) {
   declrs = declr_list(NOT_INSIDE_FUNC);
   print_declrlist(0, declrs);
 }
+*/
