@@ -2,6 +2,7 @@
 #include<string>
 #include<cstdio>
 #include<cstdlib>
+#include<iostream>
 
 extern "C" {
   #include "decl.h"
@@ -42,7 +43,21 @@ class BasicBlock {
 
 };
 
+void generate_cfg(DeclrListNode* node) {
+  Declr* declr = node->declr;
+
+  while (declr) {
+    if (declr->tag == DECLR_FUNC && declr->u.func.block) {
+      cout << "CFG para " << declr->u.func.name << endl;
+    }
+
+    node = node->next;
+  }
+}
+
 void generate_cfg_func(Declr* declr) {
+  
+
 }
 
 int main(int argc, char **argv) {
@@ -68,5 +83,7 @@ int main(int argc, char **argv) {
   token = yylex();
 
   declrs = declr_list(0);
+
+  generate_cfg(declrs);
   //print_declrlist(0, declrs);
 }
