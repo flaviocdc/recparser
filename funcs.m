@@ -1,13 +1,20 @@
+void foo() {
+}
+
+int bar(int a, int b) {
+  return a+b;
+}
+
 int umparam(int a) {
   foo();
 }
 
 char doisparam(int a, char b) {
-  foo(a,b);
+  bar(a,b);
 }
 
 char varios(int a, int b, char c, char d) {
-  foo(a,b, bar(c,d));
+  foo(a, bar(c,d));
 }
 
 int func_com_decl_var(int a, char b) {
@@ -17,10 +24,6 @@ int func_com_decl_var(int a, char b) {
   foo();
 }
 
-int varargs_unico(...) {
-  foo();
-}
-
-int varargs_ultimo(int a, ...) {
+int varargs(int a, ...) {
   foo();
 }
