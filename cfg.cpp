@@ -22,55 +22,22 @@ extern int token;
 
 using namespace std;
 
-class BasicBlock {
-  string name;
-  vector<Command*> ops;
-  vector<BasicBlock*> succs;
-  vector<BasicBlock*> preds;
-  // phis
-  // vars
-
-  public: 
-    BasicBlock() : name(),
-                   ops(),
-                   succs(),
-                   preds() { };
-
-    void set_name(string param_name) {
-      name = param_name;
-    }
-};
-
-class CFG {
-  string name;
-  vector<BasicBlock*> blocks;
-  int counter;
-
-  public:
-    CFG(string param_name) : name(param_name), blocks(), counter(0) { };
-
-    void add_block(BasicBlock* block) {
-      counter++;
-      block->set_name("B" + counter);
-      blocks.push_back(block);
-    }
-};
-
 void iterate_declrs(DeclrListNode* node) {
 
   while (node) {
     Declr* declr = node->declr;
 
     if (declr->tag == DECLR_FUNC && declr->u.func.block) {
-      cout << "CFG para " << declr->u.func.name << endl;
-      generate_cfg_func(declr);
+      CFG *cfg = generate_cfg(declr);
+
+      cout << *cfg << endl;
     }
 
     node = node->next;
   }
 }
 
-void generate_cfg_func(Declr* declr) {
+CFG* generate_cfg(Declr* declr) {
   Block* block = declr->u.func.block;
 
   if (block) {
@@ -78,13 +45,36 @@ void generate_cfg_func(Declr* declr) {
 
     CommListNode *comm_node = block->comms;
     if (comm_node) {
-      
+      generate_cfg_comms(cfg, comm_node);
     }
+
+    return cfg;
   }
+
+  return NULL;
 }
 
-void generate_cfg_comms(CommListNode* node) {
-  
+void generate_cfg_comms(CFG* cfg, CommListNode* node) {
+  BasicBlock* block = new BasicBlock;
+  cfg->add_block(block);
+
+  while(node) {
+    Command* cmd = node->comm;
+    switch(cmd->tag) {
+      case COMMAND_ATTR:
+      case COMMAND_FUNCALL:
+      case COMMAND_RET: {
+                          block->add_op(cmd);
+                          break;
+                        }
+      default: {
+                 cout << "Caso nao tratado no CFG: " << cmd->tag << endl;
+                 break;
+               }
+    }
+
+    node = node->next;
+  }
 }
 
 int main(int argc, char **argv) {
