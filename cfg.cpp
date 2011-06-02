@@ -44,9 +44,10 @@ class BasicBlock {
 };
 
 void generate_cfg(DeclrListNode* node) {
-  Declr* declr = node->declr;
 
-  while (declr) {
+  while (node) {
+    Declr* declr = node->declr;
+
     if (declr->tag == DECLR_FUNC && declr->u.func.block) {
       cout << "CFG para " << declr->u.func.name << endl;
     }
