@@ -4,6 +4,8 @@
 #include<cstdlib>
 #include<iostream>
 
+#include "cfg.hpp"
+
 extern "C" {
   #include "decl.h"
   #include "ast.h"
@@ -21,35 +23,47 @@ extern int token;
 using namespace std;
 
 class BasicBlock {
-  /*
-  self.name = name
-  self.phis = {}
-  self.ops = []
-  self.succs = []
-  self.preds = []
-  self.vars = set()
-  */
   string name;
-  vector<Command> ops;
-  vector<BasicBlock> succs;
-  vector<BasicBlock> preds;
+  vector<Command*> ops;
+  vector<BasicBlock*> succs;
+  vector<BasicBlock*> preds;
+  // phis
+  // vars
 
   public: 
-    BasicBlock(string param_name) : name(param_name),
-                                    ops(),
-                                    succs(),
-                                    preds() { };
+    BasicBlock() : name(),
+                   ops(),
+                   succs(),
+                   preds() { };
 
-
+    void set_name(string param_name) {
+      name = param_name;
+    }
 };
 
-void generate_cfg(DeclrListNode* node) {
+class CFG {
+  string name;
+  vector<BasicBlock*> blocks;
+  int counter;
+
+  public:
+    CFG(string param_name) : name(param_name), blocks(), counter(0) { };
+
+    void add_block(BasicBlock* block) {
+      counter++;
+      block->set_name("B" + counter);
+      blocks.push_back(block);
+    }
+};
+
+void iterate_declrs(DeclrListNode* node) {
 
   while (node) {
     Declr* declr = node->declr;
 
     if (declr->tag == DECLR_FUNC && declr->u.func.block) {
       cout << "CFG para " << declr->u.func.name << endl;
+      generate_cfg_func(declr);
     }
 
     node = node->next;
@@ -57,8 +71,20 @@ void generate_cfg(DeclrListNode* node) {
 }
 
 void generate_cfg_func(Declr* declr) {
-  
+  Block* block = declr->u.func.block;
 
+  if (block) {
+    CFG* cfg = new CFG(declr->u.func.name);
+
+    CommListNode *comm_node = block->comms;
+    if (comm_node) {
+      
+    }
+  }
+}
+
+void generate_cfg_comms(CommListNode* node) {
+  
 }
 
 int main(int argc, char **argv) {
@@ -85,6 +111,6 @@ int main(int argc, char **argv) {
 
   declrs = declr_list(0);
 
-  generate_cfg(declrs);
+  iterate_declrs(declrs);
   //print_declrlist(0, declrs);
 }
