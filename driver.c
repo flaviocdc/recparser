@@ -33,9 +33,9 @@ static void match(int next) {
   if (token != next) {
   
     if (next >= 0 && next <= 255) {
-      SYNTAX_ERROR("expected '%c' but was '%c'\n", next, token);
+      SYNTAX_ERROR("expected '%c' but was '%c' on line %d\n", next, token, yylineno);
     } else {
-      SYNTAX_ERROR("expected '%d' but was '%d'\n", next, token);
+      SYNTAX_ERROR("expected '%d' but was '%d' on line %d\n", next, token, yylineno);
     }
 
     exit(0);
@@ -236,6 +236,16 @@ static Exp* simple() {
       exp->tag = EXP_LNEG;
       exp->u.exp = expr(unop('!'));
 
+      break;
+    }
+    case TK_STRING: {
+      NEXT();
+
+      ALLOC(exp, Exp);
+
+      exp->tag = EXP_STRING;
+      exp->u.sval = yyval.sval;
+      
       break;
     }
     default:
@@ -514,10 +524,10 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
           }
 
           if (!is_type(token)) {
-            SYNTAX_ERROR("expected a type but found %d", token);
+            SYNTAX_ERROR("expected a type but found %d line %d", token, yylineno);
           }
 
-          type = parse_type();
+          type_parm = parse_type();
           NEXT();
           EXTRACT_NAME(name);
           
@@ -547,11 +557,17 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
       }
 
       match(')');
-      match('{');
 
-      declr->u.func.block = block();
-
-      match('}');
+      if (token == '{') {
+        match('{');
+        declr->u.func.block = block();
+        match('}');
+      } else if (token == ';') {
+        declr->u.func.block = NULL;
+        match(';');
+      } else { 
+        SYNTAX_ERROR("Invalid function declaration: %s\n", name);
+      }
 
       break;
     }
@@ -668,7 +684,6 @@ static CommListNode *commandl() {
   return first;
 }
 
-/*
 int main(int argc, char **argv) {
   FILE *f;
   DeclrListNode *declrs;
@@ -693,4 +708,3 @@ int main(int argc, char **argv) {
   declrs = declr_list(NOT_INSIDE_FUNC);
   print_declrlist(0, declrs);
 }
-*/
