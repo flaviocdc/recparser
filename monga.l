@@ -80,43 +80,38 @@ int alloc_sval = 0;
 [}]		{ return '}'; }
 
 [_a-zA-Z][_0-9a-zA-Z]*	{ 
-			  if(alloc_sval) { free(yyval.sval); alloc_sval = 0; }
-			  yyval.sval = (char*)malloc(yyleng + 1);
-			  if(!yyval.sval) return ERR_MEM;
-			  alloc_sval = 1;
-			  strcpy(yyval.sval, yytext);
+        yyval.sval = (char*)malloc(yyleng + 1);
+        if(!yyval.sval) return ERR_MEM;
+        strcpy(yyval.sval, yytext);
 			  return TK_ID;
 			}
 
 [0-9]+  { 
 	  long val;
-	  if(alloc_sval) { free(yyval.sval); alloc_sval = 0; }
 	  val = strtol(yytext, NULL, 10);
-	  if(errno != ERANGE && val <= INT_MAX && val >= INT_MIN) { yyval.ival = (int)val; return TK_INT; } else return ERR_IRANGE;
+    if(errno != ERANGE && val <= INT_MAX && val >= INT_MIN) { yyval.ival = (int)val; return TK_INT; } else return ERR_IRANGE;
 	}
 
 "0x"[0-9a-fA-F]+ { 
 		   long val;
-		   if(alloc_sval) { free(yyval.sval); alloc_sval = 0; }
 		   val = strtol(yytext+2, NULL, 16);
-		   if(errno != ERANGE && val <= INT_MAX && val >= INT_MIN) { yyval.ival = (int)val; return TK_INT; } else return ERR_IRANGE; 
+       if(errno != ERANGE && val <= INT_MAX && val >= INT_MIN) { yyval.ival = (int)val; return TK_INT; } else return ERR_IRANGE; 
 		 }
 
 [0-9]+"."[0-9]*([eE][+-]?[0-9]+)?  |
 "."[0-9]+([eE][+-]?[0-9]+)?        |
 [0-9]+([eE][+-]?[0-9]+)            {
-				     if(alloc_sval) { free(yyval.sval); alloc_sval = 0; }
-                                     yyval.fval = strtod(yytext, NULL);
+             yyval.fval = strtod(yytext, NULL);
 				     if(errno != ERANGE) return TK_FLOAT; else return ERR_FRANGE;
                                    }
 
 "\""([^\n\\\"]|"\\n"|"\\t"|"\\\\"|"\\\"")*"\""	{
 						  int i, j;
 						  i = 1; j = 0;
-						  if(alloc_sval) { free(yyval.sval); alloc_sval = 0; }
-						  yyval.sval = (char*)malloc(yyleng);
-						  if(!yyval.sval) return ERR_MEM;
-						  alloc_sval = 1;
+              
+              yyval.sval = (char*)malloc(yyleng);
+              if(!yyval.sval) return ERR_MEM;
+
 						  while(i < (yyleng -1)) {
 						    if(yytext[i]=='\\' && yytext[i+1]=='n') {
 						      yyval.sval[j] = '\n';
