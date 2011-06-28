@@ -11,6 +11,8 @@ int alloc_sval = 0;
 
 %}
 
+%option yylineno
+
 %%
 
 "while"		{ return TK_WHILE; }
