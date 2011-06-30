@@ -7,18 +7,33 @@ CXX_FLAGS=-Iinclude/ -ggdb
 DEPS = lex.yy.c
 OUT = out
 
-_C_OBJ = ast_pretty_printer.o  compiler.o  driver.o  lex.yy.o
+_C_OBJ = ast_pretty_printer.o driver.o  lex.yy.o
 C_OBJ = $(patsubst %,$(OUT)/%,$(_C_OBJ))
 
+_CXX_OBJ = cfg.o cfg_printer.o
+CXX_OBJ = $(patsubst %,$(OUT)/%,$(_CXX_OBJ))
 
-compiler: $(C_OBJ)
-	gcc -o $@ $^ $(CFLAGS)
+all: compiler cfg
 
+# Compilador
+compiler: $(C_OBJ) out/compiler.o
+	$(CC) -o $@ $^ $(CFLAGS)
+
+# CFG
+cfg: $(CXX_OBJ) $(C_OBJ)
+	$(CXX) -o $@ $^ $(CXX_FLAGS)
+
+# Gerandor o lexer
 lex.yy.c: monga.l
 	lex monga.l
 
+# Compilando arquivos C
 $(OUT)/%.o: %.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
+
+# Compilando arquivos C++
+$(OUT)/%.o: %.cpp $(DEPS)
+	$(CXX) -c -o $@ $< $(CXX_FLAGS)
 
 clean:
 	rm -f $(OUT)/*.o
