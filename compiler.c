@@ -30,5 +30,6 @@ int main(int argc, char **argv) {
   NEXT();
 
   declrs = declr_list(NOT_INSIDE_FUNC);
+  check_prog(declrs);
   print_declrlist(0, declrs);
 }

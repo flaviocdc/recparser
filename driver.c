@@ -4,6 +4,7 @@
 #include "decl.h"
 #include "ast.h"
 #include "driver.h"
+#include "type_checker.h"
 
 #define EXTRACT_NAME(var) ALLOCS(var, strlen(yyval.sval) + 1);  strcpy(var, yyval.sval);
 #define SYNTAX_ERROR(format, args...) printf(format , ## args); exit(1);
@@ -75,6 +76,8 @@ static int unop(int token) {
 
 static Exp* expr(int level) {
   Exp *exp1 = simple();
+  
+  exp1->line = yylineno;
 
   int op = binop(token);
 
@@ -85,6 +88,8 @@ static Exp* expr(int level) {
 
     NEXT();
     exp2 = expr(pri[op].right);
+    exp2->line = yylineno;
+
     op = binop(token);
 
     ALLOC(new_exp, Exp);
@@ -92,6 +97,7 @@ static Exp* expr(int level) {
     new_exp->u.binop.op = token_op;
     new_exp->u.binop.e1 = exp1;
     new_exp->u.binop.e2 = exp2;
+    new_exp->line = yylineno;
 
     exp1 = new_exp;
   }
@@ -102,6 +108,8 @@ static Exp* expr(int level) {
 static Var* create_var(char* name, ExpListNode* list) {
   Var *var;
   ALLOC(var, Var);
+
+  var->line = yylineno;
   
   var->name = name;
   var->idxs = list;
@@ -249,12 +257,16 @@ static Exp* simple() {
       break;
   }
 
+  exp->line = yylineno;
+
   return exp;
 }
 
 static Command *command() {
   Command *cmd;
   ALLOC(cmd, Command);
+
+  cmd->line = yylineno;
 
   switch (token) {
     case TK_IF: {
@@ -338,6 +350,7 @@ static Command *command() {
       } else if (token == '(') {
         cmd->tag = COMMAND_FUNCALL;
         ALLOC(cmd->u.funcall, Exp);
+        cmd->u.funcall->line = yylineno;
         cmd->u.funcall->tag = EXP_FUNCALL;
         cmd->u.funcall->u.funcall.name = name;
 
@@ -387,6 +400,8 @@ static Type* parse_type() {
   Type* type;
 
   ALLOC(type, Type);
+
+  type->line = yylineno;
   
   switch (token) {
     case TK_TVOID:
@@ -471,6 +486,8 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
   EXTRACT_NAME(name);
   NEXT();
   ALLOC(declr, Declr);
+
+  declr->line = yylineno;
 
   switch (token) {
     case '(': {
