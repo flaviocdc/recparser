@@ -5,16 +5,12 @@
 #include "ast.h"
 #include "driver.h"
 
-#define NEXT() token = yylex()
 #define EXTRACT_NAME(var) ALLOCS(var, strlen(yyval.sval) + 1);  strcpy(var, yyval.sval);
 #define SYNTAX_ERROR(format, args...) printf(format , ## args); exit(1);
 #define LAST_NODE(node) while(node->next) node = node->next;
 
 #define NO_BINOP -1
 #define NO_UNOP 0
-#define INSIDE_FUNC 1
-#define NOT_INSIDE_FUNC 0
-
 
 extern int yylineno;
 extern FILE *outfile;
@@ -682,29 +678,4 @@ static CommListNode *commandl() {
     curr = next;
   }
   return first;
-}
-
-int main(int argc, char **argv) {
-  FILE *f;
-  DeclrListNode *declrs;
-
-  if(argc > 1) {
-    f = fopen(argv[1], "r");
-    filename = argv[1];
-  } else {
-    f = stdin;
-    filename = "stdin";
-  }
-  if(!f) {
-    fprintf(stderr, "Cannot open file %s. Exiting...", filename);
-    exit(0);
-  }
-  yyrestart(f);
-  yylineno = 1;
-  outfile = stdout;
-  filename = "stdout";
-  NEXT();
-
-  declrs = declr_list(NOT_INSIDE_FUNC);
-  print_declrlist(0, declrs);
 }
