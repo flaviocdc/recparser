@@ -1,8 +1,8 @@
 CC=gcc
-CFLAGS=-I. -ggdb
+CFLAGS=-Iinclude/ -ggdb
 
 CXX=g++
-CXX_FLAGS=-I. -ggdb
+CXX_FLAGS=-Iinclude/ -ggdb
 
 DEPS = lex.yy.c
 OUT = out
