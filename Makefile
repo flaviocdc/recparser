@@ -37,6 +37,7 @@ $(OUT)/%.o: %.cpp $(DEPS)
 
 clean:
 	rm -f $(OUT)/*.o
-	rm -f compiler
+	rm -f compiler cfg
+	rm -f lex.yy.c
 
 .PHONY: clean
