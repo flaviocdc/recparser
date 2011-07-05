@@ -102,8 +102,27 @@ CFG_Exp* create_cfg_exp(BasicBlock *block, Exp* ast_exp) {
       cfg_exp = new CFG_SimpleOp(literal);
       break;
     }
+    case EXP_VAR: {
+      CFG_Var* cfg_var = new CFG_Var(ast_exp->u.var->name);
+      cfg_exp = new CFG_SimpleOp(cfg_var);
+      break;
+    }
+    case EXP_FUNCALL: {
+      CFG_Funcall* cfg_funcall = new CFG_Funcall(ast_exp->u.funcall.name);
+      
+      ExpListNode* expl = ast_exp->u.funcall.expl;
+      while (expl) {
+        CFG_Exp* temp = create_cfg_exp(block, expl->exp);
+        cfg_funcall->params.push_back(temp);
+        expl = expl->next;
+      }
+      
+      cfg_exp = new CFG_SimpleOp(cfg_funcall);
+    }
 
   }
+  
+  return cfg_exp;
 }
 
 int main(int argc, char **argv) {

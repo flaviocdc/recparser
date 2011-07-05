@@ -21,12 +21,14 @@ string CFG_Funcall::str() {
   for (vector<CFG_Exp*>::iterator it = params.begin(); it != params.end(); ++it) {
     ss << (*it)->str() << ",";
   }
-
+  
   string out = ss.str();
-
-  out = out.substr(0, out.size() - 1) + ")";
-
-  return out;
+  
+  if (params.size() > 0) {
+    out = out.substr(0, out.size()-1);
+  }
+    
+  return out + ")";
 }
 
 string CFG_SimpleOp::str() {
@@ -36,7 +38,7 @@ string CFG_SimpleOp::str() {
 string CFG_Attr::str() {
   stringstream ss;
   
-  ss << left->str() << "=" << right->str();
+  ss << left->str() << " = " << right->str();
   
   return ss.str();
 }

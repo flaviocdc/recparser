@@ -11,20 +11,18 @@ using namespace std;
 #include "cfg.hpp"
 
 ostream &operator<<( ostream &out, BasicBlock &block ) {
-  out << block.name << ":";
+  out << block.name << ":" << endl;
   
   vector<CFG_Command*>::iterator it;
-    out << "To aqui!" << endl;
   for ( it = block.ops.begin(); it < block.ops.end(); it++ ) {
-    out << "To aqui!" << endl;
-    out << (*it)->str() << endl;
+    out << "\t" << (*it)->str() << endl;
   }
 
   return out;
 }
 
 ostream &operator<<( ostream &out, CFG &cfg ) {
-  out << "func: " << cfg.name << endl;
+  out << "--" << cfg.name << endl;
 
   vector<BasicBlock*>::iterator it;
   
