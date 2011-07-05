@@ -4,6 +4,7 @@
 #include<cstdlib>
 #include<iostream>
 
+#include "cfg_data.hpp"
 #include "cfg.hpp"
 
 extern "C" {
@@ -62,25 +63,47 @@ void generate_cfg_comms(CFG* cfg, CommListNode* node) {
     Command* cmd = node->comm;
     switch(cmd->tag) {
       case COMMAND_ATTR: {
-        CFG_Attr* = create_cfg_attr(cmd);
+        CFG_Attr* cfg_attr = create_cfg_attr(block, cmd);
       }
       case COMMAND_FUNCALL:
       case COMMAND_RET: {
-                          block->add_op(cmd);
-                          break;
-                        }
+        //block->add_op(cmd);
+        break;
+      }
       default: {
-                 cout << "Caso nao tratado no CFG: " << cmd->tag << endl;
-                 break;
-               }
+       cout << "Caso nao tratado no CFG: " << cmd->tag << endl;
+       break;
+     }
     }
 
     node = node->next;
   }
 }
 
-CFG_Var* create_cfg_attr(Command* cmd) {
+CFG_Attr* create_cfg_attr(BasicBlock *block, Command* cmd) {
+  Var* ast_var = cmd->u.attr.lvalue;
+  Exp* ast_exp = cmd->u.attr.rvalue;
+
+  CFG_Var* cfg_var = new CFG_Var(ast_var->name);
+  CFG_Exp* cfg_exp = create_cfg_exp(block, ast_exp);
   
+  CFG_Attr* cfg_attr = new CFG_Attr(cfg_var, cfg_exp);
+  block->ops.push_back(cfg_attr);
+  
+  return cfg_attr;
+}
+
+CFG_Exp* create_cfg_exp(BasicBlock *block, Exp* ast_exp) {
+  CFG_Exp* cfg_exp;
+
+  switch (ast_exp->tag) {
+    case EXP_INT: {
+      CFG_Literal<int>* literal = new CFG_Literal<int>(ast_exp->u.ival);
+      cfg_exp = new CFG_SimpleOp(literal);
+      break;
+    }
+
+  }
 }
 
 int main(int argc, char **argv) {

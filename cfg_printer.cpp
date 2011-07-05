@@ -13,9 +13,11 @@ using namespace std;
 ostream &operator<<( ostream &out, BasicBlock &block ) {
   out << block.name << ":";
   
-  vector<Command*>::iterator it;
-
+  vector<CFG_Command*>::iterator it;
+    out << "To aqui!" << endl;
   for ( it = block.ops.begin(); it < block.ops.end(); it++ ) {
+    out << "To aqui!" << endl;
+    out << (*it)->str() << endl;
   }
 
   return out;

@@ -3,12 +3,14 @@
 
 #include <string>
 #include <vector>
+#include <sstream>
+#include <iostream>
 
 using namespace std;
 
 struct CFG_Command {
 
-  virtual string str();
+  virtual string str() = 0;
   //friend ostream& operator<<(ostream& o, CFG_Command& m);
 };
 
@@ -28,7 +30,7 @@ struct CFG_NamedMember : public CFG_Member {
 struct CFG_Var : public CFG_NamedMember {
   int index;
 
-  CFG_Var(string paramName) : CFG_NamedMember(name), index(0) {}; 
+  CFG_Var(string paramName) : CFG_NamedMember(paramName), index(0) {}; 
   CFG_Var(string paramName, int paramIndex) : CFG_NamedMember(paramName), index(paramIndex) {}; 
 
   string str();
@@ -37,6 +39,8 @@ struct CFG_Var : public CFG_NamedMember {
 template<class T>
 struct CFG_Literal : public CFG_Member {
   T value;
+
+  CFG_Literal(T paramValue) : value(paramValue) {};
 
   string str() {
     stringstream ss;
@@ -47,9 +51,21 @@ struct CFG_Literal : public CFG_Member {
 };
 
 struct CFG_Exp : public CFG_Member {
-  
-  CFG_Exp *e1;
-  CFG_Exp *e2;
+  virtual string str() = 0;
+};
+
+struct CFG_SimpleOp : public CFG_Exp {
+  CFG_Member *exp;
+
+  CFG_SimpleOp(CFG_Member* paramExp) : exp(paramExp) {};
+
+  string str();
+};
+
+struct CFG_BinaryOp : public CFG_Exp {
+  CFG_Member *e1;
+  CFG_Member *e2;
+  int op;
   
   string str();
 };

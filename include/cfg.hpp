@@ -9,6 +9,7 @@ extern "C" {
 #include<vector>
 #include<string>
 #include<sstream>
+#include "cfg_data.hpp"
 
 using namespace std;
 
@@ -16,7 +17,7 @@ class BasicBlock {
   public:
 
     string name;
-    vector<Command*> ops;
+    vector<CFG_Command*> ops;
     vector<BasicBlock*> succs;
     vector<BasicBlock*> preds;
     // phis
@@ -27,7 +28,7 @@ class BasicBlock {
                    succs(),
                    preds() { };
 
-    void add_op(Command* cmd) {
+    void add_op(CFG_Command* cmd) {
       ops.push_back(cmd);
     }
 
@@ -62,6 +63,7 @@ class CFG {
 void iterate_declrs(DeclrListNode* node);
 CFG* generate_cfg(Declr* declr);
 void generate_cfg_comms(CFG* cfg, CommListNode* node);
-CFG_Attr* create_cfg_attr(Command* cmd);
+CFG_Attr* create_cfg_attr(BasicBlock *block, Command* cmd);
+CFG_Exp* create_cfg_exp(BasicBlock *block, Exp* ast_exp);
 
 #endif
