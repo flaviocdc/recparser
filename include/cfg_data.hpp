@@ -66,14 +66,16 @@ struct CFG_BinaryOp : public CFG_Exp {
   CFG_Member *e2;
   int op;
   
+  CFG_BinaryOp(CFG_Member *left, int paramOp, CFG_Member *right) : e1(left), op(paramOp), e2(right) {};
+  
   string str();
 };
 
 struct CFG_Funcall : public CFG_NamedMember {
-  vector<CFG_Exp*> params;
+  vector<CFG_Member*> params;
   
   CFG_Funcall(string paramName) : CFG_NamedMember(paramName), params() {};
-  CFG_Funcall(string paramName, vector<CFG_Exp*> xParams) : CFG_NamedMember(paramName), params(xParams) {};
+  CFG_Funcall(string paramName, vector<CFG_Member*> xParams) : CFG_NamedMember(paramName), params(xParams) {};
 
   string str();
 };

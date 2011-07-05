@@ -35,6 +35,14 @@ string CFG_SimpleOp::str() {
   return exp->str();
 }
 
+string CFG_BinaryOp::str() {
+  stringstream ss;
+  
+  ss << e1->str() << (char) op << e2->str();
+  
+  return ss.str();
+}
+
 string CFG_Attr::str() {
   stringstream ss;
   

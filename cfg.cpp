@@ -21,6 +21,8 @@ extern FILE *outfile;
 extern char *filename;
 extern int token;
 
+int temp_counter = 0;
+
 using namespace std;
 
 void iterate_declrs(DeclrListNode* node) {
@@ -112,17 +114,58 @@ CFG_Exp* create_cfg_exp(BasicBlock *block, Exp* ast_exp) {
       
       ExpListNode* expl = ast_exp->u.funcall.expl;
       while (expl) {
-        CFG_Exp* temp = create_cfg_exp(block, expl->exp);
-        cfg_funcall->params.push_back(temp);
+        CFG_Attr* temp = create_temp_cfg_attr(block, create_cfg_exp(block, expl->exp));
+        
+        cfg_funcall->params.push_back(temp->left);
         expl = expl->next;
       }
       
       cfg_exp = new CFG_SimpleOp(cfg_funcall);
+      break;
+    }
+    case EXP_BINOP: {
+      int op = ast_exp->u.binop.op;
+
+      CFG_Exp* left_exp = create_cfg_exp(block, ast_exp->u.binop.e1);
+      CFG_Attr* left_attr = create_temp_cfg_attr(block, left_exp);
+      
+      CFG_Exp* right_exp = create_cfg_exp(block, ast_exp->u.binop.e2);
+      CFG_Attr* right_attr = create_temp_cfg_attr(block, right_exp);
+            
+      cfg_exp = new CFG_BinaryOp(left_attr->left, op, right_attr->left);
+      break;
+    }
+    case EXP_NEG: {
+      CFG_Exp* exp = create_cfg_exp(block, ast_exp->u.exp);
+      CFG_Attr* attr = create_temp_cfg_attr(block, exp);
+      
+      CFG_Literal<int>* zero_literal = new CFG_Literal<int>(0);
+      
+      cfg_exp = new CFG_BinaryOp(zero_literal, '-', attr->left);
+      break;
     }
 
   }
   
   return cfg_exp;
+}
+
+CFG_Attr* create_temp_cfg_attr(BasicBlock* block, CFG_Exp* exp) {
+  CFG_Var* var = new CFG_Var(new_temp_var());
+  CFG_Attr* attr = new CFG_Attr(var, exp);
+  
+  block->ops.push_back(attr);
+  
+  return attr;
+}
+
+string new_temp_var() {
+  stringstream ss;
+  ss << "t" << temp_counter;
+  
+  temp_counter++;
+  
+  return ss.str();
 }
 
 int main(int argc, char **argv) {
