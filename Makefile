@@ -10,7 +10,7 @@ OUT = out
 _C_OBJ = ast_pretty_printer.o driver.o  lex.yy.o symtab.o type_checker.o
 C_OBJ = $(patsubst %,$(OUT)/%,$(_C_OBJ))
 
-_CXX_OBJ = cfg.o cfg_printer.o
+_CXX_OBJ = cfg.o cfg_printer.o cfg_data.o
 CXX_OBJ = $(patsubst %,$(OUT)/%,$(_CXX_OBJ))
 
 all: compiler cfg

@@ -61,7 +61,9 @@ void generate_cfg_comms(CFG* cfg, CommListNode* node) {
   while(node) {
     Command* cmd = node->comm;
     switch(cmd->tag) {
-      case COMMAND_ATTR:
+      case COMMAND_ATTR: {
+        CFG_Attr* = create_cfg_attr(cmd);
+      }
       case COMMAND_FUNCALL:
       case COMMAND_RET: {
                           block->add_op(cmd);
@@ -75,6 +77,10 @@ void generate_cfg_comms(CFG* cfg, CommListNode* node) {
 
     node = node->next;
   }
+}
+
+CFG_Var* create_cfg_attr(Command* cmd) {
+  
 }
 
 int main(int argc, char **argv) {

@@ -62,5 +62,6 @@ class CFG {
 void iterate_declrs(DeclrListNode* node);
 CFG* generate_cfg(Declr* declr);
 void generate_cfg_comms(CFG* cfg, CommListNode* node);
+CFG_Attr* create_cfg_attr(Command* cmd);
 
 #endif
