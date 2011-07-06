@@ -32,6 +32,7 @@ class BasicBlock {
     void br(BasicBlock* block);
     void brc(BasicBlock *trueBlock, BasicBlock *falseBlock);
 
+    string str();
     friend ostream &operator<<( ostream &out, BasicBlock &block );
 };
 
@@ -39,6 +40,8 @@ class CFG {
   public:
     string name;
     vector<BasicBlock*> blocks;
+    BasicBlock *working_block;
+    
     int counter;
 
     CFG(string param_name) : name(param_name), blocks(), counter(0) { };

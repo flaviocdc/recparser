@@ -53,12 +53,12 @@ string CFG_Attr::str() {
 
 string CFG_Branch::str() {
   stringstream ss;
-  ss << "br " << *target;
+  ss << "br " << target->str();
   return ss.str();
 }
 
 string CFG_ConditionalBranch::str() {
   stringstream ss;
-  ss << "brc " << cond->str() << " " << *trueBlock << " " << *falseBlock;
+  ss << "brc " << cond->str() << " " << trueBlock->str() << " " << falseBlock->str();
   return ss.str();
 }

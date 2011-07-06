@@ -58,14 +58,14 @@ CFG* generate_cfg(Declr* declr) {
 }
 
 void generate_cfg_comms(CFG* cfg, CommListNode* node) {
-  BasicBlock* block = new BasicBlock;
+  BasicBlock* block = new BasicBlock();
   cfg->add_block(block);
 
   while(node) {
     Command* cmd = node->comm;
     switch(cmd->tag) {
       case COMMAND_ATTR: {
-        CFG_Attr* cfg_attr = create_cfg_attr(cfg, block, cmd);
+        CFG_Attr* cfg_attr = create_cfg_attr(cfg, cmd);
       }
       case COMMAND_FUNCALL:
       case COMMAND_RET: {
@@ -82,20 +82,21 @@ void generate_cfg_comms(CFG* cfg, CommListNode* node) {
   }
 }
 
-CFG_Attr* create_cfg_attr(CFG* cfg, BasicBlock *block, Command* cmd) {
+CFG_Attr* create_cfg_attr(CFG* cfg, Command* cmd) {
   Var* ast_var = cmd->u.attr.lvalue;
   Exp* ast_exp = cmd->u.attr.rvalue;
 
   CFG_Var* cfg_var = new CFG_Var(ast_var->name);
-  CFG_Exp* cfg_exp = create_cfg_exp(cfg, block, ast_exp);
+  CFG_Exp* cfg_exp = create_cfg_exp(cfg, ast_exp);
   
   CFG_Attr* cfg_attr = new CFG_Attr(cfg_var, cfg_exp);
-  block->ops.push_back(cfg_attr);
+  
+  cfg->working_block->add_op(cfg_attr);
   
   return cfg_attr;
 }
 
-CFG_Exp* create_cfg_exp(CFG* cfg, BasicBlock *block, Exp* ast_exp) {
+CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
   CFG_Exp* cfg_exp;
 
   switch (ast_exp->tag) {
@@ -113,8 +114,10 @@ CFG_Exp* create_cfg_exp(CFG* cfg, BasicBlock *block, Exp* ast_exp) {
       CFG_Funcall* cfg_funcall = new CFG_Funcall(ast_exp->u.funcall.name);
       
       ExpListNode* expl = ast_exp->u.funcall.expl;
+      BasicBlock* block = cfg->working_block;
+      
       while (expl) {
-        CFG_Attr* temp = create_temp_cfg_attr(block, create_cfg_exp(cfg, block, expl->exp));
+        CFG_Attr* temp = create_temp_cfg_attr(cfg->working_block, create_cfg_exp(cfg, expl->exp));
         
         cfg_funcall->params.push_back(temp->lvalue);
         expl = expl->next;
@@ -130,9 +133,10 @@ CFG_Exp* create_cfg_exp(CFG* cfg, BasicBlock *block, Exp* ast_exp) {
         BasicBlock* cond_bb = new BasicBlock();
         cfg->add_block(cond_bb);
         
-        block->br(cond_bb);
+        cfg->working_block->br(cond_bb);
+        cfg->working_block = cond_bb;
         
-        CFG_Attr* left = create_temp_cfg_attr(cond_bb, create_cfg_exp(cfg, cond_bb, ast_exp->u.binop.e1));
+        CFG_Attr* left = create_temp_cfg_attr(cond_bb, create_cfg_exp(cfg, ast_exp->u.binop.e1));
         BasicBlock* trueBlock = new BasicBlock();
         BasicBlock* falseBlock = new BasicBlock();
         
@@ -140,29 +144,34 @@ CFG_Exp* create_cfg_exp(CFG* cfg, BasicBlock *block, Exp* ast_exp) {
         cfg->add_block(falseBlock);
         
         CFG_ConditionalBranch* brc = new CFG_ConditionalBranch(trueBlock, falseBlock, left->lvalue);
-        cond_bb->ops.push_back(brc);
+        cond_bb->add_op(brc);
         
-        CFG_Attr* temp = new CFG_Attr(left->lvalue, create_cfg_exp(cfg, trueBlock, ast_exp->u.binop.e2));
-        trueBlock->ops.push_back(temp);
+        cfg->working_block = trueBlock;
+        
+        CFG_Attr* temp = new CFG_Attr(left->lvalue, create_cfg_exp(cfg, ast_exp->u.binop.e2));
+        trueBlock->add_op(temp);
         trueBlock->br(falseBlock);
         
-        // TODO working block == falseBlock
-        //cfg_exp = br;
+        cfg->working_block = falseBlock;
+        
+        cfg->working_block = falseBlock;
         cfg_exp = new CFG_SimpleOp(left->lvalue);
         break;
       }
 
-      CFG_Exp* left_exp = create_cfg_exp(cfg, block, ast_exp->u.binop.e1);
-      CFG_Attr* left_attr = create_temp_cfg_attr(block, left_exp);
+      CFG_Exp* left_exp = create_cfg_exp(cfg, ast_exp->u.binop.e1);
+      CFG_Attr* left_attr = create_temp_cfg_attr(cfg->working_block, left_exp);
       
-      CFG_Exp* right_exp = create_cfg_exp(cfg, block, ast_exp->u.binop.e2);
-      CFG_Attr* right_attr = create_temp_cfg_attr(block, right_exp);
+      CFG_Exp* right_exp = create_cfg_exp(cfg, ast_exp->u.binop.e2);
+      CFG_Attr* right_attr = create_temp_cfg_attr(cfg->working_block, right_exp);
             
       cfg_exp = new CFG_BinaryOp(left_attr->lvalue, op, right_attr->rvalue);
       break;
     }
     case EXP_NEG: {
-      CFG_Exp* exp = create_cfg_exp(cfg, block, ast_exp->u.exp);
+      BasicBlock* block = cfg->working_block;
+    
+      CFG_Exp* exp = create_cfg_exp(cfg, ast_exp->u.exp);
       CFG_Attr* attr = create_temp_cfg_attr(block, exp);
       
       CFG_Literal<int>* zero_literal = new CFG_Literal<int>(0);
@@ -180,7 +189,7 @@ CFG_Attr* create_temp_cfg_attr(BasicBlock* block, CFG_Exp* exp) {
   CFG_Var* var = new CFG_Var(new_temp_var());
   CFG_Attr* attr = new CFG_Attr(var, exp);
   
-  block->ops.push_back(attr);
+  block->add_op(attr);
   
   return attr;
 }

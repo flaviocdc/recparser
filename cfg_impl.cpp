@@ -28,14 +28,21 @@ void BasicBlock::brc(BasicBlock *trueBlock, BasicBlock *falseBlock) {
   ops.push_back(new CFG_ConditionalBranch(trueBlock, falseBlock, NULL));
 }
 
+string BasicBlock::str() {
+  return name;
+}
+
 void CFG::add_block(BasicBlock* block) {
   counter++;
 
-  ostringstream o;
-  o << "B" << counter;
-  block->name = o.str();
+  stringstream ss;
+  ss << "B" << counter;
+  block->name = ss.str();
 
   blocks.push_back(block);
+  
+  if (blocks.size() == 1)
+    working_block = block;
 }
 
 vector<BasicBlock*> CFG::block_list() {
