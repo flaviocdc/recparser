@@ -72,10 +72,8 @@ void generate_cfg_comms(CFG* cfg, CommListNode* node) {
         break;
       }
       case COMMAND_RET: {
-        CFG_Exp* exp_ret = create_cfg_exp(cfg, cmd->u.ret);
-        CFG_Attr* cfg_ret_attr = create_temp_cfg_attr(cfg->working_block, exp_ret);
-        
-        cfg->working_block->add_op(new CFG_Return(cfg_ret_attr->lvalue));
+        CFG_Return* cfg_ret = create_cfg_return(cfg, cmd);
+        cfg->working_block->add_op(cfg_ret);
         break;
       }
       default: {
@@ -165,6 +163,13 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
   }
   
   return cfg_exp;
+}
+
+CFG_Return* create_cfg_return(CFG* cfg, Command* cmd) {
+  CFG_Exp* exp_ret = create_cfg_exp(cfg, cmd->u.ret);
+  CFG_Attr* cfg_ret_attr = create_temp_cfg_attr(cfg->working_block, exp_ret);
+  
+  return new CFG_Return(cfg_ret_attr->lvalue);
 }
 
 CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp) {
