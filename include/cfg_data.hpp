@@ -140,9 +140,9 @@ struct CFG_Branch : public CFG_Command {
 struct CFG_ConditionalBranch : public CFG_Command {
   BasicBlock *trueBlock;
   BasicBlock *falseBlock;
-  CFG_Member *cond;
+  CFG_Var *cond;
   
-  CFG_ConditionalBranch(BasicBlock *paramTrueBlock, BasicBlock *paramFalseBlock, CFG_Member *paramCond) : 
+  CFG_ConditionalBranch(BasicBlock *paramTrueBlock, BasicBlock *paramFalseBlock, CFG_Var *paramCond) : 
       trueBlock(paramTrueBlock), falseBlock(paramFalseBlock), cond(paramCond) {};
   
   string str();

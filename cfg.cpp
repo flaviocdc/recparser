@@ -133,6 +133,23 @@ CFG_Exp* create_cfg_exp(CFG* cfg, BasicBlock *block, Exp* ast_exp) {
         block->br(cond_bb);
         
         CFG_Attr* left = create_temp_cfg_attr(cond_bb, create_cfg_exp(cfg, cond_bb, ast_exp->u.binop.e1));
+        BasicBlock* trueBlock = new BasicBlock();
+        BasicBlock* falseBlock = new BasicBlock();
+        
+        cfg->add_block(trueBlock);
+        cfg->add_block(falseBlock);
+        
+        CFG_ConditionalBranch* brc = new CFG_ConditionalBranch(trueBlock, falseBlock, left->lvalue);
+        cond_bb->ops.push_back(brc);
+        
+        CFG_Attr* temp = new CFG_Attr(left->lvalue, create_cfg_exp(cfg, trueBlock, ast_exp->u.binop.e2));
+        trueBlock->ops.push_back(temp);
+        trueBlock->br(falseBlock);
+        
+        // TODO working block == falseBlock
+        //cfg_exp = br;
+        cfg_exp = new CFG_SimpleOp(left->lvalue);
+        break;
       }
 
       CFG_Exp* left_exp = create_cfg_exp(cfg, block, ast_exp->u.binop.e1);
