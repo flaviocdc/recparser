@@ -129,7 +129,11 @@ struct CFG_Attr : public CFG_Command {
 };
 
 struct CFG_Return : public CFG_Command {
-  CFG_Exp* exp;
+  CFG_Member* retVal;
+  
+  CFG_Return(CFG_Member* paramRetVal) : retVal(paramRetVal) {};
+  
+  string str();
 };
 
 struct CFG_Branch : public CFG_Command {

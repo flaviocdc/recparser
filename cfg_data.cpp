@@ -51,6 +51,10 @@ string CFG_Attr::str() {
   return ss.str();
 }
 
+string CFG_Return::str() {
+  return "ret " + retVal->str();
+}
+
 string CFG_Branch::str() {
   stringstream ss;
   ss << "br " << target->str();

@@ -58,18 +58,24 @@ CFG* generate_cfg(Declr* declr) {
 }
 
 void generate_cfg_comms(CFG* cfg, CommListNode* node) {
-  BasicBlock* block = new BasicBlock();
-  cfg->add_block(block);
+  cfg->add_block(new BasicBlock());
 
   while(node) {
     Command* cmd = node->comm;
     switch(cmd->tag) {
       case COMMAND_ATTR: {
         CFG_Attr* cfg_attr = create_cfg_attr(cfg, cmd);
+        cfg->working_block->add_op(cfg_attr);
+        break;
       }
-      case COMMAND_FUNCALL:
+      case COMMAND_FUNCALL: {
+        break;
+      }
       case COMMAND_RET: {
-        //block->add_op(cmd);
+        CFG_Exp* exp_ret = create_cfg_exp(cfg, cmd->u.ret);
+        CFG_Attr* cfg_ret_attr = create_temp_cfg_attr(cfg->working_block, exp_ret);
+        
+        cfg->working_block->add_op(new CFG_Return(cfg_ret_attr->lvalue));
         break;
       }
       default: {
@@ -90,8 +96,6 @@ CFG_Attr* create_cfg_attr(CFG* cfg, Command* cmd) {
   CFG_Exp* cfg_exp = create_cfg_exp(cfg, ast_exp);
   
   CFG_Attr* cfg_attr = new CFG_Attr(cfg_var, cfg_exp);
-  
-  cfg->working_block->add_op(cfg_attr);
   
   return cfg_attr;
 }
@@ -133,6 +137,8 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
         CFG_Var* var = create_short_circuit_and(cfg, ast_exp);
         cfg_exp = new CFG_SimpleOp(var);
         break;
+      } else if (op == TK_OR) {
+        // TODO
       }
 
       CFG_Exp* left_exp = create_cfg_exp(cfg, ast_exp->u.binop.e1);

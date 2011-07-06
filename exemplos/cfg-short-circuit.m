@@ -3,5 +3,5 @@ int main() {
 
   a = b && c;
   
-  return a;
+  return a + 1 + 3;
 }
