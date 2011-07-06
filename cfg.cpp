@@ -116,7 +116,7 @@ CFG_Exp* create_cfg_exp(BasicBlock *block, Exp* ast_exp) {
       while (expl) {
         CFG_Attr* temp = create_temp_cfg_attr(block, create_cfg_exp(block, expl->exp));
         
-        cfg_funcall->params.push_back(temp->left);
+        cfg_funcall->params.push_back(temp->lvalue);
         expl = expl->next;
       }
       
@@ -132,7 +132,7 @@ CFG_Exp* create_cfg_exp(BasicBlock *block, Exp* ast_exp) {
       CFG_Exp* right_exp = create_cfg_exp(block, ast_exp->u.binop.e2);
       CFG_Attr* right_attr = create_temp_cfg_attr(block, right_exp);
             
-      cfg_exp = new CFG_BinaryOp(left_attr->left, op, right_attr->left);
+      cfg_exp = new CFG_BinaryOp(left_attr->lvalue, op, right_attr->rvalue);
       break;
     }
     case EXP_NEG: {
@@ -141,7 +141,7 @@ CFG_Exp* create_cfg_exp(BasicBlock *block, Exp* ast_exp) {
       
       CFG_Literal<int>* zero_literal = new CFG_Literal<int>(0);
       
-      cfg_exp = new CFG_BinaryOp(zero_literal, '-', attr->left);
+      cfg_exp = new CFG_BinaryOp(zero_literal, '-', attr->lvalue);
       break;
     }
 

@@ -46,7 +46,7 @@ string CFG_BinaryOp::str() {
 string CFG_Attr::str() {
   stringstream ss;
   
-  ss << left->str() << " = " << right->str();
+  ss << lvalue->str() << " = " << rvalue->str();
   
   return ss.str();
 }

@@ -81,10 +81,10 @@ struct CFG_Funcall : public CFG_NamedMember {
 };
 
 struct CFG_Attr : public CFG_Command {
-  CFG_Attr(CFG_Var* lhs, CFG_Exp* rhs) : left(lhs), right(rhs) {}; 
+  CFG_Attr(CFG_Var* param_lv, CFG_Exp* param_rv) : lvalue(param_lv), rvalue(param_rv) {}; 
 
-  CFG_Var* left;
-  CFG_Exp* right;
+  CFG_Var* lvalue;
+  CFG_Exp* rvalue;
 
   string str();
 };
