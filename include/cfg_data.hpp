@@ -13,6 +13,42 @@ struct CFG_Command {
   //friend ostream& operator<<(ostream& o, CFG_Command& m);
 };
 
+class BasicBlock {
+  public:
+
+    string name;
+    vector<CFG_Command*> ops;
+    vector<BasicBlock*> succs;
+    vector<BasicBlock*> preds;
+    // phis
+    // vars
+
+    BasicBlock() : name(),
+                   ops(),
+                   succs(),
+                   preds() { };
+
+    void add_op(CFG_Command* cmd);    
+    void br(BasicBlock* block);
+    void brc(BasicBlock *trueBlock, BasicBlock *falseBlock);
+
+    friend ostream &operator<<( ostream &out, BasicBlock &block );
+};
+
+class CFG {
+  public:
+    string name;
+    vector<BasicBlock*> blocks;
+    int counter;
+
+    CFG(string param_name) : name(param_name), blocks(), counter(0) { };
+
+    void add_block(BasicBlock* block);
+    vector<BasicBlock*> block_list();
+
+    friend ostream &operator<<( ostream &out, CFG &cfg );
+};
+
 struct CFG_Member {
   virtual string str() = 0;
   //friend ostream& operator<<(ostream& o, CFG_Member& m);
@@ -91,6 +127,25 @@ struct CFG_Attr : public CFG_Command {
 
 struct CFG_Return : public CFG_Command {
   CFG_Exp* exp;
+};
+
+struct CFG_Branch : public CFG_Command {
+  BasicBlock* target;
+  
+  CFG_Branch(BasicBlock* paramTarget) : target(paramTarget) {};
+  
+  string str();
+};
+
+struct CFG_ConditionalBranch : public CFG_Command {
+  BasicBlock *trueBlock;
+  BasicBlock *falseBlock;
+  CFG_Member *cond;
+  
+  CFG_ConditionalBranch(BasicBlock *paramTrueBlock, BasicBlock *paramFalseBlock, CFG_Member *paramCond) : 
+      trueBlock(paramTrueBlock), falseBlock(paramFalseBlock), cond(paramCond) {};
+  
+  string str();
 };
 
 #endif
