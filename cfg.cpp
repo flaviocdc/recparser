@@ -47,8 +47,7 @@ CFG* generate_cfg(Declr* declr) {
     CFG* cfg = new CFG(declr->u.func.name);
 
     if (block->comms) {
-      BasicBlock* bb = create_basic_block(cfg);
-      cfg->working_block = bb;
+      BasicBlock* bb = create_basic_working_block(cfg);
       
       generate_cfg_comms(cfg, block);
     }
@@ -94,15 +93,13 @@ void generate_cfg_comm(CFG* cfg, Command* cmd) {
       BasicBlock* top = cfg->working_block;
       BasicBlock* blk_final = create_basic_block(cfg);
       
-      BasicBlock* blk_if = create_basic_block(cfg);
-      cfg->working_block = blk_if;
+      BasicBlock* blk_if = create_basic_working_block(cfg);
       generate_cfg_comm(cfg, cmd_if);
       cfg->working_block->br(blk_final);
       
       BasicBlock* blk_else = NULL;
       if (cmd_else) {
-        blk_else = create_basic_block(cfg);
-        cfg->working_block = blk_else;
+        blk_else = create_basic_working_block(cfg);
         generate_cfg_comm(cfg, cmd_else);
         cfg->working_block->br(blk_final);
       }
@@ -194,10 +191,8 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       break;
     }
     case EXP_NEG: {
-      BasicBlock* block = cfg->working_block;
-    
       CFG_Exp* exp = create_cfg_exp(cfg, ast_exp->u.exp);
-      CFG_Attr* attr = create_temp_cfg_attr(block, exp);
+      CFG_Attr* attr = create_temp_cfg_attr(cfg->working_block, exp);
       
       CFG_Literal<int>* zero_literal = new CFG_Literal<int>(0);
       
@@ -264,6 +259,17 @@ string new_temp_var() {
 BasicBlock *create_basic_block(CFG* cfg) {
   BasicBlock *block = new BasicBlock;
   cfg->add_block(block);
+  
+  return block;
+}
+
+void set_working_block(CFG* cfg, BasicBlock* block) {
+  cfg->working_block = block;
+}
+
+BasicBlock *create_basic_working_block(CFG* cfg) {
+  BasicBlock* block = create_basic_block(cfg);
+  set_working_block(cfg, block);
   
   return block;
 }
