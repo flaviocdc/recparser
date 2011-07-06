@@ -57,11 +57,17 @@ static int binop(int token) {
     case '*' :
     case '/' :
       return 1;
-    case '^' : return 3;
+    case '^' :
+      return 3;
     case '<' :
-    case '>' : 
+    case '>' :
+    case TK_EQ:
+    case TK_NEQ:
+    case TK_LEQ:
+    case TK_GEQ:
+    case TK_AND:
+    case TK_OR:
       return 2;
-    case TK_EQ : return 2;
     default : return NO_BINOP;
   }
 }
@@ -253,7 +259,7 @@ static Exp* simple() {
       break;
     }
     default:
-      SYNTAX_ERROR("Invalid expression %d\n", token);
+      SYNTAX_ERROR("Invalid expression %d. Line %d\n", token, yylineno);
       break;
   }
 
@@ -388,7 +394,7 @@ static Command *command() {
     }
 
     default: {
-      SYNTAX_ERROR("invalid command in line %i\n", yylineno);
+      SYNTAX_ERROR("invalid command in line %d\n", yylineno);
     }
 
   }  
@@ -413,7 +419,7 @@ static Type* parse_type() {
       break; 
     }
     default:
-      SYNTAX_ERROR("Declaration error (invalid type)\n");
+      SYNTAX_ERROR("Declaration error (invalid type). Line %d\n", yylineno);
   }
 
   NEXT();
@@ -480,7 +486,7 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
   head->next = NULL;
 
   if (token != TK_ID) {
-    SYNTAX_ERROR("Expected TK_ID but found: %d\n", token);
+    SYNTAX_ERROR("Expected TK_ID but found: %d. Line: %d\n.", token, yylineno);
   }
 
   EXTRACT_NAME(name);
@@ -493,7 +499,7 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
     case '(': {
       
       if (inside_func) {
-        SYNTAX_ERROR("Nesting function declaration is not allowed\n");
+        SYNTAX_ERROR("Nesting function declaration is not allowed. Line: %d\n", yylineno);
       }
 
       declr->tag = DECLR_FUNC;
@@ -579,7 +585,7 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
         declr->u.func.block = NULL;
         match(';');
       } else { 
-        SYNTAX_ERROR("Invalid function declaration: %s\n", name);
+        SYNTAX_ERROR("Invalid function declaration: %s. Line: %d\n", name, yylineno);
       }
 
       break;
@@ -599,7 +605,7 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
       NEXT();
       
       if (token != TK_ID) {
-        SYNTAX_ERROR("Was expecting TK_ID but found: %d\n", token);
+        SYNTAX_ERROR("Was expecting TK_ID but found: %d. Line: %d\n", token, yylineno);
       }
 
       DeclrListNode *new_node, *it;
@@ -635,7 +641,7 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
       break;
     }
     default: {
-      SYNTAX_ERROR("Invalid declaration.\n");
+      SYNTAX_ERROR("Invalid declaration. Line: %d, last token: %d\n", yylineno, token);
     }
   }
 
