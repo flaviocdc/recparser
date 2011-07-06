@@ -1,7 +1,9 @@
 int main() {
-  int a, b, c;
+  int a, b, c, d, e, f;
 
   a = b && c;
   
-  return a + 1 + 3;
+  d = e || f;
+  
+  return a + d; 
 }

@@ -27,6 +27,7 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp);
 CFG_Attr* create_temp_cfg_attr(BasicBlock* block, CFG_Exp* exp);
 
 CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp);
+CFG_Var* create_short_circuit_or(CFG* cfg, Exp* ast_exp);
 
 BasicBlock *create_basic_block(CFG* cfg);
 BasicBlock *create_basic_working_block(CFG* cfg);

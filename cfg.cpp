@@ -177,8 +177,11 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
         CFG_Var* var = create_short_circuit_and(cfg, ast_exp);
         cfg_exp = new CFG_SimpleOp(var);
         break;
-      } else if (op == TK_OR) {
-        // TODO
+      }
+      if (op == TK_OR) {
+        CFG_Var* var = create_short_circuit_or(cfg, ast_exp);
+        cfg_exp = new CFG_SimpleOp(var);
+        break;
       }
 
       CFG_Exp* left_exp = create_cfg_exp(cfg, ast_exp->u.binop.e1);
@@ -187,7 +190,7 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       CFG_Exp* right_exp = create_cfg_exp(cfg, ast_exp->u.binop.e2);
       CFG_Attr* right_attr = create_temp_cfg_attr(cfg->working_block, right_exp);
             
-      cfg_exp = new CFG_BinaryOp(left_attr->lvalue, op, right_attr->rvalue);
+      cfg_exp = new CFG_BinaryOp(left_attr->lvalue, op, right_attr->lvalue);
       break;
     }
     case EXP_NEG: {
@@ -223,6 +226,32 @@ CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp) {
   BasicBlock* falseBlock = create_basic_block(cfg);
   
   CFG_ConditionalBranch* brc = new CFG_ConditionalBranch(trueBlock, falseBlock, left->lvalue);
+  cond_bb->add_op(brc);
+  
+  cfg->working_block = trueBlock;
+  
+  CFG_Attr* temp = new CFG_Attr(left->lvalue, create_cfg_exp(cfg, ast_exp->u.binop.e2));
+  trueBlock->add_op(temp);
+  trueBlock->br(falseBlock);
+  
+  cfg->working_block = falseBlock;
+  
+  cfg->working_block = falseBlock;
+  
+  return left->lvalue;
+}
+
+CFG_Var* create_short_circuit_or(CFG* cfg, Exp* ast_exp) {
+  BasicBlock* cond_bb = create_basic_block(cfg);
+  
+  cfg->working_block->br(cond_bb);
+  cfg->working_block = cond_bb;
+  
+  CFG_Attr* left = create_temp_cfg_attr(cond_bb, create_cfg_exp(cfg, ast_exp->u.binop.e1));
+  BasicBlock* trueBlock = create_basic_block(cfg);
+  BasicBlock* falseBlock = create_basic_block(cfg);
+  
+  CFG_ConditionalBranch* brc = new CFG_ConditionalBranch(falseBlock, trueBlock, left->lvalue);
   cond_bb->add_op(brc);
   
   cfg->working_block = trueBlock;
