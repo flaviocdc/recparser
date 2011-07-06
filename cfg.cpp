@@ -46,43 +46,88 @@ CFG* generate_cfg(Declr* declr) {
   if (block) {
     CFG* cfg = new CFG(declr->u.func.name);
 
-    CommListNode *comm_node = block->comms;
-    if (comm_node) {
-      generate_cfg_comms(cfg, comm_node);
+    if (block->comms) {
+      BasicBlock* bb = create_basic_block(cfg);
+      cfg->working_block = bb;
+      
+      generate_cfg_comms(cfg, block);
     }
 
     return cfg;
   }
 
+  // TODO funcao sem corpo (prototipo)
   return NULL;
 }
 
-void generate_cfg_comms(CFG* cfg, CommListNode* node) {
-  cfg->add_block(new BasicBlock());
+void generate_cfg_comms(CFG* cfg, Block* block) {
+  CommListNode* node = block->comms;
 
   while(node) {
     Command* cmd = node->comm;
-    switch(cmd->tag) {
-      case COMMAND_ATTR: {
-        CFG_Attr* cfg_attr = create_cfg_attr(cfg, cmd);
-        cfg->working_block->add_op(cfg_attr);
-        break;
-      }
-      case COMMAND_FUNCALL: {
-        break;
-      }
-      case COMMAND_RET: {
-        CFG_Return* cfg_ret = create_cfg_return(cfg, cmd);
-        cfg->working_block->add_op(cfg_ret);
-        break;
-      }
-      default: {
-       cout << "Caso nao tratado no CFG: " << cmd->tag << endl;
-       break;
-     }
-    }
+  
+    generate_cfg_comm(cfg, cmd);    
 
     node = node->next;
+  }
+}
+
+void generate_cfg_comm(CFG* cfg, Command* cmd) {
+  switch(cmd->tag) {
+    case COMMAND_ATTR: {
+      CFG_Attr* cfg_attr = create_cfg_attr(cfg, cmd);
+      cfg->working_block->add_op(cfg_attr);
+      break;
+    }
+    case COMMAND_FUNCALL: {
+      break;
+    }
+    case COMMAND_RET: {
+      CFG_Return* cfg_ret = create_cfg_return(cfg, cmd);
+      cfg->working_block->add_op(cfg_ret);
+      break;
+    }
+    case COMMAND_IF: {
+      Command *cmd_if = cmd->u.cif.comm;
+      Command *cmd_else = cmd->u.cif.celse;
+      
+      BasicBlock* top = cfg->working_block;
+      BasicBlock* blk_final = create_basic_block(cfg);
+      
+      BasicBlock* blk_if = create_basic_block(cfg);
+      cfg->working_block = blk_if;
+      generate_cfg_comm(cfg, cmd_if);
+      cfg->working_block->br(blk_final);
+      
+      BasicBlock* blk_else = NULL;
+      if (cmd_else) {
+        blk_else = create_basic_block(cfg);
+        cfg->working_block = blk_else;
+        generate_cfg_comm(cfg, cmd_else);
+        cfg->working_block->br(blk_final);
+      }
+    
+      CFG_Attr* cond = create_temp_cfg_attr(top, create_cfg_exp(cfg, cmd->u.cif.exp));
+      CFG_ConditionalBranch* brc;
+      if (blk_else) {
+        brc = new CFG_ConditionalBranch(blk_if, blk_else, cond->lvalue);
+      } else {
+        brc = new CFG_ConditionalBranch(blk_if, blk_final, cond->lvalue);
+      }
+      top->add_op(brc);
+      
+      cfg->working_block = blk_final;
+    
+      break;
+    }
+    case COMMAND_BLOCK: {
+      generate_cfg_comms(cfg, cmd->u.block);
+      break;
+    }
+    default: {
+     cout << "Caso nao tratado no CFG: " << cmd->tag << endl;
+     break;
+   }
   }
 }
 
@@ -173,18 +218,14 @@ CFG_Return* create_cfg_return(CFG* cfg, Command* cmd) {
 }
 
 CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp) {
-  BasicBlock* cond_bb = new BasicBlock();
-  cfg->add_block(cond_bb);
+  BasicBlock* cond_bb = create_basic_block(cfg);
   
   cfg->working_block->br(cond_bb);
   cfg->working_block = cond_bb;
   
   CFG_Attr* left = create_temp_cfg_attr(cond_bb, create_cfg_exp(cfg, ast_exp->u.binop.e1));
-  BasicBlock* trueBlock = new BasicBlock();
-  BasicBlock* falseBlock = new BasicBlock();
-  
-  cfg->add_block(trueBlock);
-  cfg->add_block(falseBlock);
+  BasicBlock* trueBlock = create_basic_block(cfg);
+  BasicBlock* falseBlock = create_basic_block(cfg);
   
   CFG_ConditionalBranch* brc = new CFG_ConditionalBranch(trueBlock, falseBlock, left->lvalue);
   cond_bb->add_op(brc);
@@ -220,6 +261,13 @@ string new_temp_var() {
   return ss.str();
 }
 
+BasicBlock *create_basic_block(CFG* cfg) {
+  BasicBlock *block = new BasicBlock;
+  cfg->add_block(block);
+  
+  return block;
+}
+
 int main(int argc, char **argv) {
   FILE *f;
   DeclrListNode *declrs;
@@ -244,6 +292,6 @@ int main(int argc, char **argv) {
 
   declrs = declr_list(0);
 
+  print_declrlist(0, declrs);
   iterate_declrs(declrs);
-  //print_declrlist(0, declrs);
 }
