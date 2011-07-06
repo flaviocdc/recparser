@@ -130,32 +130,8 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       int op = ast_exp->u.binop.op;
       
       if (op == TK_AND) {
-        BasicBlock* cond_bb = new BasicBlock();
-        cfg->add_block(cond_bb);
-        
-        cfg->working_block->br(cond_bb);
-        cfg->working_block = cond_bb;
-        
-        CFG_Attr* left = create_temp_cfg_attr(cond_bb, create_cfg_exp(cfg, ast_exp->u.binop.e1));
-        BasicBlock* trueBlock = new BasicBlock();
-        BasicBlock* falseBlock = new BasicBlock();
-        
-        cfg->add_block(trueBlock);
-        cfg->add_block(falseBlock);
-        
-        CFG_ConditionalBranch* brc = new CFG_ConditionalBranch(trueBlock, falseBlock, left->lvalue);
-        cond_bb->add_op(brc);
-        
-        cfg->working_block = trueBlock;
-        
-        CFG_Attr* temp = new CFG_Attr(left->lvalue, create_cfg_exp(cfg, ast_exp->u.binop.e2));
-        trueBlock->add_op(temp);
-        trueBlock->br(falseBlock);
-        
-        cfg->working_block = falseBlock;
-        
-        cfg->working_block = falseBlock;
-        cfg_exp = new CFG_SimpleOp(left->lvalue);
+        CFG_Var* var = create_short_circuit_and(cfg, ast_exp);
+        cfg_exp = new CFG_SimpleOp(var);
         break;
       }
 
@@ -183,6 +159,36 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
   }
   
   return cfg_exp;
+}
+
+CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp) {
+  BasicBlock* cond_bb = new BasicBlock();
+  cfg->add_block(cond_bb);
+  
+  cfg->working_block->br(cond_bb);
+  cfg->working_block = cond_bb;
+  
+  CFG_Attr* left = create_temp_cfg_attr(cond_bb, create_cfg_exp(cfg, ast_exp->u.binop.e1));
+  BasicBlock* trueBlock = new BasicBlock();
+  BasicBlock* falseBlock = new BasicBlock();
+  
+  cfg->add_block(trueBlock);
+  cfg->add_block(falseBlock);
+  
+  CFG_ConditionalBranch* brc = new CFG_ConditionalBranch(trueBlock, falseBlock, left->lvalue);
+  cond_bb->add_op(brc);
+  
+  cfg->working_block = trueBlock;
+  
+  CFG_Attr* temp = new CFG_Attr(left->lvalue, create_cfg_exp(cfg, ast_exp->u.binop.e2));
+  trueBlock->add_op(temp);
+  trueBlock->br(falseBlock);
+  
+  cfg->working_block = falseBlock;
+  
+  cfg->working_block = falseBlock;
+  
+  return left->lvalue;
 }
 
 CFG_Attr* create_temp_cfg_attr(BasicBlock* block, CFG_Exp* exp) {
