@@ -18,7 +18,7 @@ string CFG_Funcall::str() {
   stringstream ss;
 
   ss << CFG_NamedMember::str() << "(";
-  for (vector<CFG_Exp*>::iterator it = params.begin(); it != params.end(); ++it) {
+  for (vector<CFG_Member*>::iterator it = params.begin(); it != params.end(); ++it) {
     ss << (*it)->str() << ",";
   }
   
