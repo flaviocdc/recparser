@@ -91,6 +91,10 @@ void generate_cfg_comm(CFG* cfg, Command* cmd) {
       create_cfg_if(cfg, cmd);
       break;
     }
+    case COMMAND_WHILE: {
+      create_cfg_while(cfg, cmd);
+      break;
+    }
     case COMMAND_BLOCK: {
       generate_cfg_comms(cfg, cmd->u.block);
       break;
@@ -207,13 +211,30 @@ void create_cfg_if(CFG* cfg, Command* cmd) {
   }
 
   CFG_Attr* cond = create_temp_cfg_attr(top, create_cfg_exp(cfg, cmd->u.cif.exp));
-  CFG_ConditionalBranch* brc;
   if (blk_else) {
-    brc = new CFG_ConditionalBranch(blk_if, blk_else, cond->lvalue);
+    top->brc(blk_if, blk_else, cond->lvalue);
   } else {
-    brc = new CFG_ConditionalBranch(blk_if, blk_final, cond->lvalue);
+    top->brc(blk_if, blk_final, cond->lvalue);
   }
-  top->add_op(brc);
+  
+  cfg->working_block = blk_final;
+}
+
+void create_cfg_while(CFG* cfg, Command* cmd) {
+  BasicBlock* blk_cond = create_basic_block(cfg);
+  cfg->working_block->br(blk_cond);
+  cfg->working_block = blk_cond;
+  
+  BasicBlock* blk_loop = create_basic_block(cfg);
+  BasicBlock* blk_final = create_basic_block(cfg);
+  
+  CFG_Attr* cond = create_temp_cfg_attr(blk_cond, create_cfg_exp(cfg, cmd->u.cwhile.exp));
+  
+  cfg->working_block->brc(blk_loop, blk_final, cond->lvalue);
+  
+  cfg->working_block = blk_loop;
+  generate_cfg_comm(cfg, cmd->u.cwhile.comm);
+  cfg->working_block->br(blk_cond);
   
   cfg->working_block = blk_final;
 }
@@ -242,8 +263,7 @@ CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp) {
   BasicBlock* trueBlock = create_basic_block(cfg);
   BasicBlock* falseBlock = create_basic_block(cfg);
   
-  CFG_ConditionalBranch* brc = new CFG_ConditionalBranch(trueBlock, falseBlock, left->lvalue);
-  cond_bb->add_op(brc);
+  cond_bb->brc(trueBlock, falseBlock, left->lvalue);
   
   cfg->working_block = trueBlock;
   
@@ -268,8 +288,7 @@ CFG_Var* create_short_circuit_or(CFG* cfg, Exp* ast_exp) {
   BasicBlock* trueBlock = create_basic_block(cfg);
   BasicBlock* falseBlock = create_basic_block(cfg);
   
-  CFG_ConditionalBranch* brc = new CFG_ConditionalBranch(falseBlock, trueBlock, left->lvalue);
-  cond_bb->add_op(brc);
+  cond_bb->brc(falseBlock, trueBlock, left->lvalue);
   
   cfg->working_block = trueBlock;
   

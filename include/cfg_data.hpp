@@ -13,45 +13,6 @@ struct CFG_Command {
   //friend ostream& operator<<(ostream& o, CFG_Command& m);
 };
 
-class BasicBlock {
-  public:
-
-    string name;
-    vector<CFG_Command*> ops;
-    vector<BasicBlock*> succs;
-    vector<BasicBlock*> preds;
-    // phis
-    // vars
-
-    BasicBlock() : name(),
-                   ops(),
-                   succs(),
-                   preds() { };
-
-    void add_op(CFG_Command* cmd);    
-    void br(BasicBlock* block);
-    void brc(BasicBlock *trueBlock, BasicBlock *falseBlock);
-
-    string str();
-    friend ostream &operator<<( ostream &out, BasicBlock &block );
-};
-
-class CFG {
-  public:
-    string name;
-    vector<BasicBlock*> blocks;
-    BasicBlock *working_block;
-    
-    int counter;
-
-    CFG(string param_name) : name(param_name), blocks(), counter(0) { };
-
-    void add_block(BasicBlock* block);
-    vector<BasicBlock*> block_list();
-
-    friend ostream &operator<<( ostream &out, CFG &cfg );
-};
-
 struct CFG_Member {
   virtual string str() = 0;
   //friend ostream& operator<<(ostream& o, CFG_Member& m);
@@ -72,6 +33,45 @@ struct CFG_Var : public CFG_NamedMember {
   CFG_Var(string paramName, int paramIndex) : CFG_NamedMember(paramName), index(paramIndex) {}; 
 
   string str();
+};
+
+class BasicBlock {
+  public:
+
+    string name;
+    vector<CFG_Command*> ops;
+    vector<BasicBlock*> succs;
+    vector<BasicBlock*> preds;
+    // phis
+    // vars
+
+    BasicBlock() : name(),
+                   ops(),
+                   succs(),
+                   preds() { };
+
+    void add_op(CFG_Command* cmd);    
+    void br(BasicBlock* block);
+    void brc(BasicBlock *trueBlock, BasicBlock *falseBlock, CFG_Var* cond);
+
+    string str();
+    friend ostream &operator<<( ostream &out, BasicBlock &block );
+};
+
+class CFG {
+  public:
+    string name;
+    vector<BasicBlock*> blocks;
+    BasicBlock *working_block;
+    
+    int counter;
+
+    CFG(string param_name) : name(param_name), blocks(), counter(0) { };
+
+    void add_block(BasicBlock* block);
+    vector<BasicBlock*> block_list();
+
+    friend ostream &operator<<( ostream &out, CFG &cfg );
 };
 
 template<class T>

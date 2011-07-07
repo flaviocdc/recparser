@@ -19,14 +19,14 @@ void BasicBlock::br(BasicBlock* block) {
   ops.push_back(new CFG_Branch(block));
 }
 
-void BasicBlock::brc(BasicBlock *trueBlock, BasicBlock *falseBlock) {
+void BasicBlock::brc(BasicBlock *trueBlock, BasicBlock *falseBlock, CFG_Var* cond) {
   succs.push_back(trueBlock);
   succs.push_back(falseBlock);
   
   trueBlock->preds.push_back(this);
   falseBlock->preds.push_back(this);
   
-  ops.push_back(new CFG_ConditionalBranch(trueBlock, falseBlock, NULL));
+  ops.push_back(new CFG_ConditionalBranch(trueBlock, falseBlock, cond));
 }
 
 string BasicBlock::str() {
