@@ -114,7 +114,6 @@ struct CFG_Funcall : public CFG_NamedMember {
   vector<CFG_Member*> params;
   
   CFG_Funcall(string paramName) : CFG_NamedMember(paramName), params() {};
-  CFG_Funcall(string paramName, vector<CFG_Member*> xParams) : CFG_NamedMember(paramName), params(xParams) {};
 
   string str();
 };
@@ -152,6 +151,15 @@ struct CFG_ConditionalBranch : public CFG_Command {
   CFG_ConditionalBranch(BasicBlock *paramTrueBlock, BasicBlock *paramFalseBlock, CFG_Var *paramCond) : 
       trueBlock(paramTrueBlock), falseBlock(paramFalseBlock), cond(paramCond) {};
   
+  string str();
+};
+
+struct CFG_FuncallCommand : public CFG_Command {
+  string name;
+  vector<CFG_Member*> params;
+  
+  CFG_FuncallCommand(string paramName) : name(paramName), params() {};
+
   string str();
 };
 

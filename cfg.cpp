@@ -79,6 +79,18 @@ void generate_cfg_comm(CFG* cfg, Command* cmd) {
       break;
     }
     case COMMAND_FUNCALL: {
+      string name(cmd->u.funcall->u.funcall.name);
+      CFG_FuncallCommand* cfg_funcall = new CFG_FuncallCommand(name);
+      ExpListNode* expl = cmd->u.funcall->u.funcall.expl;
+      while (expl) {
+        CFG_Attr* temp = create_temp_cfg_attr(cfg->working_block, create_cfg_exp(cfg, expl->exp));
+        
+        cfg_funcall->params.push_back(temp->lvalue);
+        expl = expl->next;
+      }
+      
+      cfg->working_block->add_op(cfg_funcall);
+      
       break;
     }
     case COMMAND_RET: {
@@ -87,34 +99,7 @@ void generate_cfg_comm(CFG* cfg, Command* cmd) {
       break;
     }
     case COMMAND_IF: {
-      Command *cmd_if = cmd->u.cif.comm;
-      Command *cmd_else = cmd->u.cif.celse;
-      
-      BasicBlock* top = cfg->working_block;
-      BasicBlock* blk_final = create_basic_block(cfg);
-      
-      BasicBlock* blk_if = create_basic_working_block(cfg);
-      generate_cfg_comm(cfg, cmd_if);
-      cfg->working_block->br(blk_final);
-      
-      BasicBlock* blk_else = NULL;
-      if (cmd_else) {
-        blk_else = create_basic_working_block(cfg);
-        generate_cfg_comm(cfg, cmd_else);
-        cfg->working_block->br(blk_final);
-      }
-    
-      CFG_Attr* cond = create_temp_cfg_attr(top, create_cfg_exp(cfg, cmd->u.cif.exp));
-      CFG_ConditionalBranch* brc;
-      if (blk_else) {
-        brc = new CFG_ConditionalBranch(blk_if, blk_else, cond->lvalue);
-      } else {
-        brc = new CFG_ConditionalBranch(blk_if, blk_final, cond->lvalue);
-      }
-      top->add_op(brc);
-      
-      cfg->working_block = blk_final;
-    
+      create_cfg_if(cfg, cmd);
       break;
     }
     case COMMAND_BLOCK: {
@@ -158,7 +143,6 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       CFG_Funcall* cfg_funcall = new CFG_Funcall(ast_exp->u.funcall.name);
       
       ExpListNode* expl = ast_exp->u.funcall.expl;
-      BasicBlock* block = cfg->working_block;
       
       while (expl) {
         CFG_Attr* temp = create_temp_cfg_attr(cfg->working_block, create_cfg_exp(cfg, expl->exp));
@@ -213,6 +197,36 @@ CFG_Return* create_cfg_return(CFG* cfg, Command* cmd) {
   CFG_Attr* cfg_ret_attr = create_temp_cfg_attr(cfg->working_block, exp_ret);
   
   return new CFG_Return(cfg_ret_attr->lvalue);
+}
+
+void create_cfg_if(CFG* cfg, Command* cmd) {
+  Command *cmd_if = cmd->u.cif.comm;
+  Command *cmd_else = cmd->u.cif.celse;
+  
+  BasicBlock* top = cfg->working_block;
+  BasicBlock* blk_final = create_basic_block(cfg);
+  
+  BasicBlock* blk_if = create_basic_working_block(cfg);
+  generate_cfg_comm(cfg, cmd_if);
+  cfg->working_block->br(blk_final);
+  
+  BasicBlock* blk_else = NULL;
+  if (cmd_else) {
+    blk_else = create_basic_working_block(cfg);
+    generate_cfg_comm(cfg, cmd_else);
+    cfg->working_block->br(blk_final);
+  }
+
+  CFG_Attr* cond = create_temp_cfg_attr(top, create_cfg_exp(cfg, cmd->u.cif.exp));
+  CFG_ConditionalBranch* brc;
+  if (blk_else) {
+    brc = new CFG_ConditionalBranch(blk_if, blk_else, cond->lvalue);
+  } else {
+    brc = new CFG_ConditionalBranch(blk_if, blk_final, cond->lvalue);
+  }
+  top->add_op(brc);
+  
+  cfg->working_block = blk_final;
 }
 
 CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp) {

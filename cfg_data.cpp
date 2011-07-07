@@ -66,3 +66,20 @@ string CFG_ConditionalBranch::str() {
   ss << "brc " << cond->str() << " " << trueBlock->str() << " " << falseBlock->str();
   return ss.str();
 }
+
+string CFG_FuncallCommand::str() {
+  stringstream ss;
+  
+  ss << name << "(";
+  for (vector<CFG_Member*>::iterator it = params.begin(); it != params.end(); ++it) {
+    ss << (*it)->str() << ",";
+  }
+  
+  string out = ss.str();
+  
+  if (params.size() > 0) {
+    out = out.substr(0, out.size()-1);
+  }
+    
+  return out + ")";
+}
