@@ -6,9 +6,9 @@
 #include "driver.h"
 #include "type_checker.h"
 
-#define EXTRACT_NAME(var) ALLOCS(var, strlen(yyval.sval) + 1);  strcpy(var, yyval.sval);
-#define SYNTAX_ERROR(format, args...) printf(format , ## args); exit(1);
-#define LAST_NODE(node) while(node->next) node = node->next;
+#define EXTRACT_NAME(var) { ALLOCS(var, strlen(yyval.sval) + 1);  strcpy(var, yyval.sval); }
+#define SYNTAX_ERROR(format, args...) { printf(format , ## args); exit(1); }
+#define LAST_NODE(node) { while(node->next) node = node->next; }
 
 #define NO_BINOP -1
 #define NO_UNOP 0
@@ -553,7 +553,7 @@ static Declr *declr(DeclrListNode *head, int inside_func) {
           ALLOC(cparm, DeclrListNode);
           ALLOC(declr_parm, Declr);
 
-          declr_parm->type = type;
+          declr_parm->type = type_parm;
           declr_parm->u.name = name;
 
           cparm->declr = declr_parm;
