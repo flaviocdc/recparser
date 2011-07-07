@@ -27,3 +27,10 @@ int func_com_decl_var(int a, char b) {
 int varargs(int a, ...) {
   foo();
 }
+
+int fun_call_exp() {
+  int a, x;
+  a = umparam(1) + x;
+
+  return x;
+}

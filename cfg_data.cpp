@@ -1,6 +1,7 @@
 #include <sstream>
 #include <vector>
 #include "cfg_data.hpp"
+#include "ast_utils.hpp"
 
 string CFG_NamedMember::str() {
   return name;
@@ -38,7 +39,7 @@ string CFG_SimpleOp::str() {
 string CFG_BinaryOp::str() {
   stringstream ss;
   
-  ss << e1->str() << (char) op << e2->str();
+  ss << e1->str() << " " + retrieve_operation_string(op) << " " << e2->str();
   
   return ss.str();
 }

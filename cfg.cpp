@@ -138,7 +138,7 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       ExpListNode* expl = ast_exp->u.funcall.expl;
       
       while (expl) {
-        CFG_Attr* temp = create_temp_cfg_attr(cfg->working_block, create_cfg_exp(cfg, expl->exp));
+        CFG_Attr* temp = create_temp_cfg_attr(cfg, create_cfg_exp(cfg, expl->exp));
         
         cfg_funcall->params.push_back(temp->lvalue);
         expl = expl->next;
@@ -162,17 +162,17 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       }
 
       CFG_Exp* left_exp = create_cfg_exp(cfg, ast_exp->u.binop.e1);
-      CFG_Attr* left_attr = create_temp_cfg_attr(cfg->working_block, left_exp);
+      CFG_Attr* left_attr = create_temp_cfg_attr(cfg, left_exp);
       
       CFG_Exp* right_exp = create_cfg_exp(cfg, ast_exp->u.binop.e2);
-      CFG_Attr* right_attr = create_temp_cfg_attr(cfg->working_block, right_exp);
+      CFG_Attr* right_attr = create_temp_cfg_attr(cfg, right_exp);
             
       cfg_exp = new CFG_BinaryOp(left_attr->lvalue, op, right_attr->lvalue);
       break;
     }
     case EXP_NEG: {
       CFG_Exp* exp = create_cfg_exp(cfg, ast_exp->u.exp);
-      CFG_Attr* attr = create_temp_cfg_attr(cfg->working_block, exp);
+      CFG_Attr* attr = create_temp_cfg_attr(cfg, exp);
       
       CFG_Literal<int>* zero_literal = new CFG_Literal<int>(0);
       
@@ -181,7 +181,7 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
     }
     case EXP_LNEG: {
       CFG_Exp* exp = create_cfg_exp(cfg, ast_exp->u.exp);
-      CFG_Attr* attr = create_temp_cfg_attr(cfg->working_block, exp);    
+      CFG_Attr* attr = create_temp_cfg_attr(cfg, exp);    
       
       cfg_exp = new CFG_LogicalNotOp(attr->lvalue);
       
@@ -195,7 +195,7 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
 
 CFG_Return* create_cfg_return(CFG* cfg, Command* cmd) {
   CFG_Exp* exp_ret = create_cfg_exp(cfg, cmd->u.ret);
-  CFG_Attr* cfg_ret_attr = create_temp_cfg_attr(cfg->working_block, exp_ret);
+  CFG_Attr* cfg_ret_attr = create_temp_cfg_attr(cfg, exp_ret);
   
   return new CFG_Return(cfg_ret_attr->lvalue);
 }
@@ -218,7 +218,8 @@ void create_cfg_if(CFG* cfg, Command* cmd) {
     cfg->working_block->br(blk_final);
   }
 
-  CFG_Attr* cond = create_temp_cfg_attr(top, create_cfg_exp(cfg, cmd->u.cif.exp));
+  cfg->working_block = top;
+  CFG_Attr* cond = create_temp_cfg_attr(cfg, create_cfg_exp(cfg, cmd->u.cif.exp));
   if (blk_else) {
     top->brc(blk_if, blk_else, cond->lvalue);
   } else {
@@ -236,7 +237,7 @@ void create_cfg_while(CFG* cfg, Command* cmd) {
   BasicBlock* blk_loop = create_basic_block(cfg);
   BasicBlock* blk_final = create_basic_block(cfg);
   
-  CFG_Attr* cond = create_temp_cfg_attr(blk_cond, create_cfg_exp(cfg, cmd->u.cwhile.exp));
+  CFG_Attr* cond = create_temp_cfg_attr(cfg, create_cfg_exp(cfg, cmd->u.cwhile.exp));
   
   cfg->working_block->brc(blk_loop, blk_final, cond->lvalue);
   
@@ -252,7 +253,7 @@ void create_cfg_funcall(CFG* cfg, Command* cmd) {
   CFG_FuncallCommand* cfg_funcall = new CFG_FuncallCommand(name);
   ExpListNode* expl = cmd->u.funcall->u.funcall.expl;
   while (expl) {
-    CFG_Attr* temp = create_temp_cfg_attr(cfg->working_block, create_cfg_exp(cfg, expl->exp));
+    CFG_Attr* temp = create_temp_cfg_attr(cfg, create_cfg_exp(cfg, expl->exp));
     
     cfg_funcall->params.push_back(temp->lvalue);
     expl = expl->next;
@@ -267,19 +268,17 @@ CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp) {
   cfg->working_block->br(cond_bb);
   cfg->working_block = cond_bb;
   
-  CFG_Attr* left = create_temp_cfg_attr(cond_bb, create_cfg_exp(cfg, ast_exp->u.binop.e1));
+  CFG_Attr* left = create_temp_cfg_attr(cfg, create_cfg_exp(cfg, ast_exp->u.binop.e1));
   BasicBlock* trueBlock = create_basic_block(cfg);
   BasicBlock* falseBlock = create_basic_block(cfg);
   
-  cond_bb->brc(trueBlock, falseBlock, left->lvalue);
+  cfg->working_block->brc(trueBlock, falseBlock, left->lvalue);
   
   cfg->working_block = trueBlock;
   
   CFG_Attr* temp = new CFG_Attr(left->lvalue, create_cfg_exp(cfg, ast_exp->u.binop.e2));
   trueBlock->add_op(temp);
   trueBlock->br(falseBlock);
-  
-  cfg->working_block = falseBlock;
   
   cfg->working_block = falseBlock;
   
@@ -292,11 +291,11 @@ CFG_Var* create_short_circuit_or(CFG* cfg, Exp* ast_exp) {
   cfg->working_block->br(cond_bb);
   cfg->working_block = cond_bb;
   
-  CFG_Attr* left = create_temp_cfg_attr(cond_bb, create_cfg_exp(cfg, ast_exp->u.binop.e1));
+  CFG_Attr* left = create_temp_cfg_attr(cfg, create_cfg_exp(cfg, ast_exp->u.binop.e1));
   BasicBlock* trueBlock = create_basic_block(cfg);
   BasicBlock* falseBlock = create_basic_block(cfg);
   
-  cond_bb->brc(falseBlock, trueBlock, left->lvalue);
+  cfg->working_block->brc(falseBlock, trueBlock, left->lvalue);
   
   cfg->working_block = trueBlock;
   
@@ -306,16 +305,14 @@ CFG_Var* create_short_circuit_or(CFG* cfg, Exp* ast_exp) {
   
   cfg->working_block = falseBlock;
   
-  cfg->working_block = falseBlock;
-  
   return left->lvalue;
 }
 
-CFG_Attr* create_temp_cfg_attr(BasicBlock* block, CFG_Exp* exp) {
+CFG_Attr* create_temp_cfg_attr(CFG* cfg, CFG_Exp* exp) {
   CFG_Var* var = new CFG_Var(new_temp_var());
   CFG_Attr* attr = new CFG_Attr(var, exp);
   
-  block->add_op(attr);
+  cfg->working_block->add_op(attr);
   
   return attr;
 }

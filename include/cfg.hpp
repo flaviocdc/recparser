@@ -27,7 +27,7 @@ void create_cfg_while(CFG* cfg, Command* cmd);
 void create_cfg_funcall(CFG* cfg, Command* cmd);
 
 CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp);
-CFG_Attr* create_temp_cfg_attr(BasicBlock* block, CFG_Exp* exp);
+CFG_Attr* create_temp_cfg_attr(CFG* cfg, CFG_Exp* exp);
 
 CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp);
 CFG_Var* create_short_circuit_or(CFG* cfg, Exp* ast_exp);

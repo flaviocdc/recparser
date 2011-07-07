@@ -16,7 +16,7 @@ void BasicBlock::add_op(CFG_Command* cmd) {
 void BasicBlock::br(BasicBlock* block) {
   succs.push_back(block);
   block->preds.push_back(this);
-  ops.push_back(new CFG_Branch(block));
+  add_op(new CFG_Branch(block));
 }
 
 void BasicBlock::brc(BasicBlock *trueBlock, BasicBlock *falseBlock, CFG_Var* cond) {
@@ -26,7 +26,7 @@ void BasicBlock::brc(BasicBlock *trueBlock, BasicBlock *falseBlock, CFG_Var* con
   trueBlock->preds.push_back(this);
   falseBlock->preds.push_back(this);
   
-  ops.push_back(new CFG_ConditionalBranch(trueBlock, falseBlock, cond));
+  add_op(new CFG_ConditionalBranch(trueBlock, falseBlock, cond));
 }
 
 string BasicBlock::str() {
