@@ -4,7 +4,7 @@ int foo() {
   
   a = 0;
   
-  while (a) {
+  while (!a) {
     a = 1;
   }
   

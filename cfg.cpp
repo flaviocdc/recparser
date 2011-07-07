@@ -179,6 +179,14 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       cfg_exp = new CFG_BinaryOp(zero_literal, '-', attr->lvalue);
       break;
     }
+    case EXP_LNEG: {
+      CFG_Exp* exp = create_cfg_exp(cfg, ast_exp->u.exp);
+      CFG_Attr* attr = create_temp_cfg_attr(cfg->working_block, exp);    
+      
+      cfg_exp = new CFG_LogicalNotOp(attr->lvalue);
+      
+      break;
+    }
 
   }
   

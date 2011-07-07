@@ -118,6 +118,14 @@ struct CFG_Funcall : public CFG_NamedMember {
   string str();
 };
 
+struct CFG_LogicalNotOp : public CFG_Exp {
+  CFG_Member *exp;
+
+  CFG_LogicalNotOp(CFG_Member* paramExp) : exp(paramExp) {};
+
+  string str();
+};
+
 struct CFG_Attr : public CFG_Command {
   CFG_Attr(CFG_Var* param_lv, CFG_Exp* param_rv) : lvalue(param_lv), rvalue(param_rv) {}; 
 

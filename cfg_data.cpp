@@ -43,6 +43,10 @@ string CFG_BinaryOp::str() {
   return ss.str();
 }
 
+string CFG_LogicalNotOp::str() {
+  return "not " + exp->str();
+}
+
 string CFG_Attr::str() {
   stringstream ss;
   
