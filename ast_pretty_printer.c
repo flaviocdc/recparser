@@ -211,6 +211,9 @@ void print_exp(Exp* e) {
     case EXP_VAR:
       print_var(e->u.var);
       break;
+    case EXP_CONV:
+      print_exp(e->u.conv.exp);
+      break;
     case EXP_BINOP:
       {
 	fprintf(outfile, "(");
