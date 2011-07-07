@@ -11,6 +11,7 @@ extern "C" {
   #include "decl.h"
   #include "ast.h"
   #include "driver.h"
+  #include "type_checker.h"
 
   int yylex (void);
   void yyrestart (FILE *input_file);
@@ -184,6 +185,14 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       CFG_Attr* attr = create_temp_cfg_attr(cfg, exp);    
       
       cfg_exp = new CFG_LogicalNotOp(attr->lvalue);
+      
+      break;
+    }
+    case EXP_CONV: {
+      CFG_Exp* exp = create_cfg_exp(cfg, ast_exp->u.conv.exp);
+      CFG_Attr* attr = create_temp_cfg_attr(cfg, exp);
+      
+      cfg_exp = new CFG_SimpleOp(exp);
       
       break;
     }
@@ -368,6 +377,7 @@ int main(int argc, char **argv) {
 
   declrs = declr_list(0);
 
+  check_prog(declrs);
   print_declrlist(0, declrs);
   iterate_declrs(declrs);
 }
