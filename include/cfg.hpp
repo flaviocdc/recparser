@@ -23,6 +23,7 @@ void generate_cfg_comm(CFG* cfg, Command* cmd);
 CFG_Attr* create_cfg_attr(CFG* cfg, Command* cmd);
 CFG_Return* create_cfg_return(CFG* cfg, Command* cmd);
 void create_cfg_if(CFG* cfg, Command* cmd);
+void create_cfg_funcall(CFG* cfg, Command* cmd);
 
 CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp);
 CFG_Attr* create_temp_cfg_attr(BasicBlock* block, CFG_Exp* exp);

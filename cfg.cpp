@@ -79,18 +79,7 @@ void generate_cfg_comm(CFG* cfg, Command* cmd) {
       break;
     }
     case COMMAND_FUNCALL: {
-      string name(cmd->u.funcall->u.funcall.name);
-      CFG_FuncallCommand* cfg_funcall = new CFG_FuncallCommand(name);
-      ExpListNode* expl = cmd->u.funcall->u.funcall.expl;
-      while (expl) {
-        CFG_Attr* temp = create_temp_cfg_attr(cfg->working_block, create_cfg_exp(cfg, expl->exp));
-        
-        cfg_funcall->params.push_back(temp->lvalue);
-        expl = expl->next;
-      }
-      
-      cfg->working_block->add_op(cfg_funcall);
-      
+      create_cfg_funcall(cfg, cmd);
       break;
     }
     case COMMAND_RET: {
@@ -227,6 +216,20 @@ void create_cfg_if(CFG* cfg, Command* cmd) {
   top->add_op(brc);
   
   cfg->working_block = blk_final;
+}
+
+void create_cfg_funcall(CFG* cfg, Command* cmd) {
+  string name(cmd->u.funcall->u.funcall.name);
+  CFG_FuncallCommand* cfg_funcall = new CFG_FuncallCommand(name);
+  ExpListNode* expl = cmd->u.funcall->u.funcall.expl;
+  while (expl) {
+    CFG_Attr* temp = create_temp_cfg_attr(cfg->working_block, create_cfg_exp(cfg, expl->exp));
+    
+    cfg_funcall->params.push_back(temp->lvalue);
+    expl = expl->next;
+  }
+  
+  cfg->working_block->add_op(cfg_funcall);
 }
 
 CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp) {
