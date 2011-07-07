@@ -42,17 +42,22 @@ class BasicBlock {
     vector<CFG_Command*> ops;
     vector<BasicBlock*> succs;
     vector<BasicBlock*> preds;
+    
+    bool has_return;
+    
     // phis
     // vars
 
     BasicBlock() : name(),
                    ops(),
                    succs(),
-                   preds() { };
+                   preds(),
+                   has_return(false) { };
 
     void add_op(CFG_Command* cmd);    
     void br(BasicBlock* block);
     void brc(BasicBlock *trueBlock, BasicBlock *falseBlock, CFG_Var* cond);
+    void ret(CFG_Var* var);
 
     string str();
     friend ostream &operator<<( ostream &out, BasicBlock &block );

@@ -97,8 +97,11 @@ void generate_cfg_comm(CFG* cfg, Command* cmd) {
       break;
     }
     case COMMAND_RET: {
-      CFG_Return* cfg_ret = create_cfg_return(cfg, cmd);
-      cfg->working_block->add_op(cfg_ret);
+      CFG_Exp* exp_ret = create_cfg_exp(cfg, cmd->u.ret);
+      CFG_Attr* cfg_ret_attr = create_temp_cfg_attr(cfg, exp_ret);
+  
+      cfg->working_block->ret(cfg_ret_attr->lvalue);
+      
       break;
     }
     case COMMAND_IF: {
@@ -230,13 +233,6 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
   }
   
   return cfg_exp;
-}
-
-CFG_Return* create_cfg_return(CFG* cfg, Command* cmd) {
-  CFG_Exp* exp_ret = create_cfg_exp(cfg, cmd->u.ret);
-  CFG_Attr* cfg_ret_attr = create_temp_cfg_attr(cfg, exp_ret);
-  
-  return new CFG_Return(cfg_ret_attr->lvalue);
 }
 
 void create_cfg_if(CFG* cfg, Command* cmd) {

@@ -24,7 +24,6 @@ void generate_cfg_comms(CFG* cfg, Block* block);
 void generate_cfg_comm(CFG* cfg, Command* cmd);
 
 CFG_Attr* create_cfg_attr(CFG* cfg, Command* cmd);
-CFG_Return* create_cfg_return(CFG* cfg, Command* cmd);
 void create_cfg_if(CFG* cfg, Command* cmd);
 void create_cfg_while(CFG* cfg, Command* cmd);
 void create_cfg_funcall(CFG* cfg, Command* cmd);

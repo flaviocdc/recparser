@@ -9,8 +9,10 @@ extern "C" {
 #include "cfg_data.hpp"
 
 void BasicBlock::add_op(CFG_Command* cmd) {
-  ops.push_back(cmd);
-  //cout << "adding " << cmd->str() << " to " << this->str() << endl;
+  if (!has_return) {
+    ops.push_back(cmd);
+    //cout << "adding " << cmd->str() << " to " << this->str() << endl;
+  }
 }
 
 void BasicBlock::br(BasicBlock* block) {
@@ -27,6 +29,11 @@ void BasicBlock::brc(BasicBlock *trueBlock, BasicBlock *falseBlock, CFG_Var* con
   falseBlock->preds.push_back(this);
   
   add_op(new CFG_ConditionalBranch(trueBlock, falseBlock, cond));
+}
+
+void BasicBlock::ret(CFG_Var* var) {
+  add_op(new CFG_Return(var));
+  has_return = true;
 }
 
 string BasicBlock::str() {
