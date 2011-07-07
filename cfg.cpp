@@ -23,6 +23,8 @@ extern char *filename;
 extern int token;
 
 int temp_counter = 0;
+vector<CFG_Attr*> globals = vector<CFG_Attr*>();
+vector<CFG*> cfgs = vector<CFG*>();
 
 using namespace std;
 
@@ -33,11 +35,22 @@ void iterate_declrs(DeclrListNode* node) {
 
     if (declr->tag == DECLR_FUNC && declr->u.func.block) {
       CFG *cfg = generate_cfg(declr);
-
-      cout << *cfg << endl;
+      cfgs.push_back(cfg);
     }
 
     node = node->next;
+  }
+}
+
+void print_globals() {
+  for (vector<CFG_Attr*>::iterator it = globals.begin(); it != globals.end(); it++) {
+    cout << (*it)->str() << endl;
+  }
+}
+
+void print_cfgs() {
+  for (vector<CFG*>::iterator it = cfgs.begin(); it != cfgs.end(); it++) {
+    cout << *(*it) << endl;
   }
 }
 
@@ -192,9 +205,26 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       CFG_Exp* exp = create_cfg_exp(cfg, ast_exp->u.conv.exp);
       CFG_Attr* attr = create_temp_cfg_attr(cfg, exp);
       
-      cfg_exp = new CFG_SimpleOp(exp);
+      cfg_exp = new CFG_SimpleOp(attr->lvalue);
       
       break;
+    }
+    case EXP_STRING: {
+      stringstream ss;
+      ss << "\"" << ast_exp->u.sval << "\"";
+    
+      CFG_String* exp = new CFG_String(ss.str());
+      CFG_Var* var = new CFG_Var(new_temp_var());
+      CFG_Attr* attr = new CFG_Attr(var, exp);
+      
+      globals.push_back(attr);
+      
+      cfg_exp = new CFG_SimpleOp(attr->lvalue);
+      
+      break;
+    }
+    default: {
+      cout << "Tipo de expressao invalido" << endl;
     }
 
   }
@@ -378,6 +408,8 @@ int main(int argc, char **argv) {
   declrs = declr_list(0);
 
   check_prog(declrs);
-  print_declrlist(0, declrs);
+  //print_declrlist(0, declrs);
   iterate_declrs(declrs);
+  print_globals();
+  print_cfgs();
 }

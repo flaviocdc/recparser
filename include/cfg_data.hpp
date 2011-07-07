@@ -126,6 +126,14 @@ struct CFG_LogicalNotOp : public CFG_Exp {
   string str();
 };
 
+struct CFG_String : public CFG_Exp {
+  string value;
+  
+  CFG_String(string paramValue) : value(paramValue) {};
+  
+  string str();
+};
+
 struct CFG_Attr : public CFG_Command {
   CFG_Attr(CFG_Var* param_lv, CFG_Exp* param_rv) : lvalue(param_lv), rvalue(param_rv) {}; 
 

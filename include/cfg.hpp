@@ -14,6 +14,9 @@ extern "C" {
 using namespace std;
 
 void iterate_declrs(DeclrListNode* node);
+void print_globals();
+void print_cfgs();
+
 CFG* generate_cfg(Declr* declr);
 string new_temp_var();
 

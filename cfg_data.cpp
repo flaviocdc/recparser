@@ -48,6 +48,10 @@ string CFG_LogicalNotOp::str() {
   return "not " + exp->str();
 }
 
+string CFG_String::str() {
+  return value;
+}
+
 string CFG_Attr::str() {
   stringstream ss;
   
