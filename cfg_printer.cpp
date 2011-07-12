@@ -8,7 +8,7 @@ using namespace std;
 #include<string>
 #include<vector>
 
-#include "cfg.hpp"
+#include "cfg_data.hpp"
 
 ostream &operator<<( ostream &out, BasicBlock &block ) {
   out << block.name << ":" << endl;

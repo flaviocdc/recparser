@@ -5,7 +5,7 @@
 #include<iostream>
 
 #include "cfg_data.hpp"
-#include "cfg.hpp"
+#include "cfg_gen.hpp"
 
 extern "C" {
   #include "decl.h"

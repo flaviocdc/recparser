@@ -5,7 +5,6 @@ extern "C" {
 #include<vector>
 #include<string>
 #include<sstream>
-#include "cfg.hpp"
 #include "cfg_data.hpp"
 
 void BasicBlock::add_op(CFG_Command* cmd) {
