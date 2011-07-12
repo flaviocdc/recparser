@@ -21,7 +21,7 @@ struct CFG_NamedMember : public CFG_Member {
 
   CFG_NamedMember(string paramName) : name(paramName) {};
 
-  string str();
+  virtual string str() = 0;
 };
 
 struct CFG_Var : public CFG_NamedMember {

@@ -35,10 +35,6 @@ void BasicBlock::ret(CFG_Var* var) {
   has_return = true;
 }
 
-string BasicBlock::str() {
-  return name;
-}
-
 void CFG::add_block(BasicBlock* block) {
   counter++;
 

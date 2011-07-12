@@ -1,5 +1,6 @@
 #include <sstream>
 #include <vector>
+
 #include "cfg_data.hpp"
 #include "ast_utils.hpp"
 
@@ -91,4 +92,9 @@ string CFG_FuncallCommand::str() {
   }
     
   return out + ")";
+}
+
+
+string BasicBlock::str() {
+  return name;
 }
