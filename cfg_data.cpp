@@ -10,7 +10,6 @@ extern "C" {
 void BasicBlock::add_op(CFG_Command* cmd) {
   if (!has_return) {
     ops.push_back(cmd);
-    //cout << "adding " << cmd->str() << " to " << this->str() << endl;
   }
 }
 
