@@ -41,6 +41,9 @@ class BasicBlock {
     vector<BasicBlock*> succs;
     vector<BasicBlock*> preds;
     
+    vector<BasicBlock*> children;
+    BasicBlock* idom;
+    
     bool has_return;
     
     // phis
@@ -50,6 +53,8 @@ class BasicBlock {
                    ops(),
                    succs(),
                    preds(),
+                   children(),
+                   idom(NULL),
                    has_return(false) { };
 
     void add_op(CFG_Command* cmd);    
