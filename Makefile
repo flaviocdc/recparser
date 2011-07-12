@@ -4,40 +4,43 @@ CFLAGS=-Iinclude/ -ggdb
 CXX=g++
 CXX_FLAGS=-Iinclude/ -ggdb
 
+AST_DIR=ast
+CFG_DIR=cfg
+
 DEPS = lex.yy.c
 OUT = out
 
-_C_OBJ = ast_pretty_printer.o driver.o  lex.yy.o symtab.o type_checker.o
+_C_OBJ = ast_pretty_printer.o driver.o lex.yy.o symtab.o type_checker.o
 C_OBJ = $(patsubst %,$(OUT)/%,$(_C_OBJ))
 
-_CXX_OBJ = cfg_gen.o cfg_printer.o cfg_data.o cfg_output_dummy.o ast_utils.o
+_CXX_OBJ = cfg_gen.o cfg_printer.o cfg_data.o ast_utils.o
 CXX_OBJ = $(patsubst %,$(OUT)/%,$(_CXX_OBJ))
 
-all: compiler cfg
+all: compiler cfg-dummy
 
 # Compilador
 compiler: $(C_OBJ) out/compiler.o
 	$(CC) -o $@ $^ $(CFLAGS)
 
 # CFG
-cfg: $(CXX_OBJ) $(C_OBJ)
+cfg-dummy: $(CXX_OBJ) $(C_OBJ) out/cfg_output_dummy.o
 	$(CXX) -o $@ $^ $(CXX_FLAGS)
 
 # Gerandor o lexer
 lex.yy.c: monga.l
-	lex monga.l
+	lex -o $(AST_DIR)/lex.yy.c monga.l
 
-# Compilando arquivos C
-$(OUT)/%.o: %.c $(DEPS)
+# Compilando arquivos do gerador de AST
+$(OUT)/%.o: $(AST_DIR)/%.c $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)
 
-# Compilando arquivos C++
-$(OUT)/%.o: %.cpp $(DEPS)
+# Compilando arquivos do gerador de CFG
+$(OUT)/%.o: $(CFG_DIR)/%.cpp $(DEPS)
 	$(CXX) -c -o $@ $< $(CXX_FLAGS)
 
 clean:
 	rm -f $(OUT)/*.o
-	rm -f compiler cfg
+	rm -f compiler cfg-dummy
 	rm -f lex.yy.c
 
 .PHONY: clean
