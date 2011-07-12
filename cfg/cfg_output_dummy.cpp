@@ -94,7 +94,6 @@ string CFG_FuncallCommand::str() {
   return out + ")";
 }
 
-
 string BasicBlock::str() {
   return name;
 }
