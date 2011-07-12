@@ -10,12 +10,10 @@ using namespace std;
 
 struct CFG_Command {
   virtual string str() = 0;
-  //friend ostream& operator<<(ostream& o, CFG_Command& m);
 };
 
 struct CFG_Member {
   virtual string str() = 0;
-  //friend ostream& operator<<(ostream& o, CFG_Member& m);
 };
 
 struct CFG_NamedMember : public CFG_Member {
