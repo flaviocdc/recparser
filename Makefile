@@ -46,6 +46,6 @@ $(OUT)/%.o: $(SSA_DIR)/%.cpp $(DEPS)
 clean:
 	rm -f $(OUT)/*.o
 	rm -f compiler cfg-dummy
-	rm -f lex.yy.c
+	rm -f $(AST_DIR)/lex.yy.c
 
 .PHONY: clean
