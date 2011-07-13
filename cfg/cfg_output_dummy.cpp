@@ -95,5 +95,7 @@ string CFG_FuncallCommand::str() {
 }
 
 string BasicBlock::str() {
-  return name;
+  stringstream ss;
+  ss << "B" << name;
+  return ss.str();
 }

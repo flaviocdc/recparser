@@ -2,6 +2,7 @@ using namespace std;
 
 #include<string>
 #include<sstream>
+#include<vector>
 
 #define TK_EQ		1012
 #define TK_LEQ	1013
@@ -47,4 +48,3 @@ string retrieve_operation_string(int op) {
   
   return ss.str();
 }
-

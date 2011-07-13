@@ -1,11 +1,57 @@
 using namespace std;
 
 #include<map>
+#include<vector>
+#include<iostream>
 #include "cfg_data.hpp"
+#include "ssa.hpp"
 
+template<class T>
+inline ostream& operator<<(ostream& o, const vector<T>& v) {
+  for (typename vector<T>::const_iterator i = v.begin(); i != v.end(); ++i) {
+    o << *i << " ";
+  }
+
+  return o;
+}
+
+/**
+def rpo(nodes):
+    marks = {}
+    n = [len(nodes)-1]
+    rpo = [0] * len(nodes)
+    def bfs_visit(node):
+        marks[node] = True
+        for child in node.succs:
+            if not marks.get(child, False):
+                bfs_visit(child)
+        node.rpo = n[0]
+        rpo[node.rpo] = node
+        n[0] -= 1
+    bfs_visit(nodes[0])
+    return rpo
+*/
 void rpo(CFG* cfg) {
+  map<int, bool> marks;
+  
+  int size = cfg->block_list().size();
+  
+  int n = size - 1;
+  vector<int> rpo(size, 0);
+  
+  bfs(cfg->block_list().at(0), marks, n, rpo);
+  
+  cout << rpo << endl;
+}
 
-  map<BasicBlock*, bool> marks();
-  int n = cfg->block_list().size();
-
+void bfs(BasicBlock* node, map<int, bool> &marks, int &n, vector<int> &rpo) {
+  marks[node->name] = true;
+  for (vector<BasicBlock*>::iterator it = node->succs.begin(); it != node->succs.end(); it++) {
+    if (marks.find((*it)->name) != marks.end()) {
+      bfs(*it, marks, n, rpo);
+    }
+  }
+  node->rpo = n;
+  rpo[node->rpo] = node->name;
+  n -= 1;
 }

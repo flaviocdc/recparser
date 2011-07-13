@@ -36,20 +36,21 @@ struct CFG_Var : public CFG_NamedMember {
 class BasicBlock {
   public:
 
-    string name;
+    int name;
     vector<CFG_Command*> ops;
     vector<BasicBlock*> succs;
     vector<BasicBlock*> preds;
     
     vector<BasicBlock*> children;
     BasicBlock* idom;
+    int rpo;
     
     bool has_return;
     
     // phis
     // vars
 
-    BasicBlock() : name(),
+    BasicBlock() : name(0),
                    ops(),
                    succs(),
                    preds(),

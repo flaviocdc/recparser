@@ -11,7 +11,7 @@ using namespace std;
 #include "cfg_data.hpp"
 
 ostream &operator<<( ostream &out, BasicBlock &block ) {
-  out << block.name << ":" << endl;
+  out << block.str() << ":" << endl;
   
   vector<CFG_Command*>::iterator it;
   for ( it = block.ops.begin(); it < block.ops.end(); it++ ) {

@@ -6,6 +6,7 @@
 
 #include "cfg_data.hpp"
 #include "cfg_gen.hpp"
+#include "ssa.hpp"
 
 extern "C" {
   #include "decl.h"
@@ -65,7 +66,7 @@ CFG* generate_cfg(Declr* declr) {
       
       generate_cfg_comms(cfg, block);
     }
-
+    rpo(cfg); 
     return cfg;
   }
 
