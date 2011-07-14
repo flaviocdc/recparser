@@ -3,7 +3,9 @@ using namespace std;
 #include<map>
 #include<vector>
 #include<iostream>
-#include <algorithm>
+#include<algorithm>
+#include<set>
+
 #include "cfg_data.hpp"
 #include "ssa.hpp"
 
@@ -84,5 +86,38 @@ void dom_tree(CFG* cfg) {
   
   for (vector<BasicBlock*>::iterator it = nodes.begin(); it != nodes.end(); it++) {
     sort((*it)->children.begin(), (*it)->children.end(), compare_blocks);
+  }
+}
+
+/*
+  def dom_frontier(nodes):
+    for n in nodes:
+        n.df = set()
+    for n in nodes:
+        if len(n.preds) > 1:
+            for p in n.preds:
+                # Add n to the frontier of nodes
+                # that dominate p but do not dominate n
+                runner = p
+                while runner != n.idom:
+                    runner.df.add(n)
+                    runner = runner.idom
+*/
+void dom_frontier(CFG* cfg) {
+  for (int i = 0; i < cfg->block_list().size(); i++) {
+    BasicBlock* node = cfg->block_list()[i];
+    
+    if (node->preds.size() > 1) {
+    
+      for (int j = 0; j < node->preds.size(); j++) {
+        BasicBlock* runner = node->preds[j];
+        while (runner->index != node->idom->index) {
+          runner->frontier.insert(node);
+          runner = runner->idom;
+        }
+      }
+      
+    }
+    
   }
 }

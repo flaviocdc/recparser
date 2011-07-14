@@ -5,6 +5,7 @@
 #include <vector>
 #include <sstream>
 #include <iostream>
+#include <set>
 
 using namespace std;
 
@@ -44,6 +45,7 @@ class BasicBlock {
     vector<BasicBlock*> children;
     BasicBlock* idom;
     int rpo;
+    set<BasicBlock*> frontier;
     
     bool has_return;
     
@@ -56,6 +58,7 @@ class BasicBlock {
                    preds(),
                    children(),
                    idom(NULL),
+                   frontier(),
                    has_return(false) { };
 
     void add_op(CFG_Command* cmd);    

@@ -70,6 +70,7 @@ CFG* generate_cfg(Declr* declr) {
     }
     
     dom_tree(cfg);
+    dom_frontier(cfg);
     
     return cfg;
   }
@@ -414,5 +415,5 @@ int main(int argc, char **argv) {
   print_globals();
   print_cfgs();
   
-  print_dom_trees(cfgs);
+  print_dom_debug(cfgs);
 }

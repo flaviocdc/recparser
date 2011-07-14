@@ -2,6 +2,7 @@
 #include<vector>
 
 #include "cfg_data.hpp"
+#include "ssa_debug.hpp"
 
 using namespace std;
 
@@ -18,8 +19,22 @@ void print_dom_tree(CFG* cfg) {
   }
 }
 
-void print_dom_trees(vector<CFG*> cfgs) {
+void print_dom_frontier(CFG* cfg) {
+  cout << "== dom_frontier(" << cfg->name << ") ==" << endl;
+  
+  for (int i = 0; i < cfg->block_list().size(); i++) {
+    BasicBlock* block = cfg->block_list()[i];
+    cout << block->index << ": ";
+    for (set<BasicBlock*>::iterator child = block->frontier.begin(); child != block->frontier.end(); child++) {
+      cout << (*child)->str() << " ";
+    }
+    cout << endl;
+  }
+}
+
+void print_dom_debug(vector<CFG*> cfgs) {
   for (int i = 0; i < cfgs.size(); i++) {
     print_dom_tree(cfgs[i]);
+    print_dom_frontier(cfgs[i]);
   }
 }
