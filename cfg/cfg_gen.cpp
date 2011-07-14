@@ -6,7 +6,9 @@
 
 #include "cfg_data.hpp"
 #include "cfg_gen.hpp"
+
 #include "ssa.hpp"
+#include "ssa_debug.hpp"
 
 extern "C" {
   #include "decl.h"
@@ -66,7 +68,9 @@ CFG* generate_cfg(Declr* declr) {
       
       generate_cfg_comms(cfg, block);
     }
-    rpo(cfg); 
+    
+    dom_tree(cfg);
+    
     return cfg;
   }
 
@@ -409,4 +413,6 @@ int main(int argc, char **argv) {
   iterate_declrs(declrs);
   print_globals();
   print_cfgs();
+  
+  print_dom_trees(cfgs);
 }

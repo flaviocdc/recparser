@@ -3,6 +3,7 @@ using namespace std;
 #include<map>
 #include<vector>
 #include<iostream>
+#include <algorithm>
 #include "cfg_data.hpp"
 #include "ssa.hpp"
 
@@ -15,7 +16,7 @@ inline ostream& operator<<(ostream& o, const vector<T>& v) {
   return o;
 }
 
-void rpo(CFG* cfg) {
+vector<int> rpo(CFG* cfg) {
   map<int, bool> marks;
   
   int size = cfg->block_list().size();
@@ -25,12 +26,11 @@ void rpo(CFG* cfg) {
   
   bfs(cfg->block_list().at(0), marks, n, rpo);
   
-  cout << rpo << endl;
+  return rpo;  
 }
 
 void bfs(BasicBlock* node, map<int, bool> &marks, int &n, vector<int> &rpo) {
   marks[node->index] = true;
-  
   for (vector<BasicBlock*>::iterator it = node->succs.begin(); it != node->succs.end(); it++) {
     int block_index = (*it)->index;
     
@@ -40,7 +40,49 @@ void bfs(BasicBlock* node, map<int, bool> &marks, int &n, vector<int> &rpo) {
   }
   
   node->rpo = n;
-  rpo[n] = node->index;
+  rpo[node->rpo] = node->index;
   
   n -= 1;
+}
+
+BasicBlock* intersect(BasicBlock* left, BasicBlock* right) {
+  BasicBlock *finger1 = left, *finger2 = right;
+  
+  while (finger1->index != finger2->index) {
+    while (finger1->rpo > finger2->rpo) {
+      finger1 = finger1->idom;
+    }
+    while (finger2->rpo > finger1->rpo) {
+      finger2 = finger2->idom;
+    }
+  }
+  
+  return finger1;
+}
+
+bool compare_blocks(BasicBlock* b1, BasicBlock* b2) {
+  return b1->index < b2->index;
+}
+  
+void dom_tree(CFG* cfg) {
+  vector<int> nodes_rpo = rpo(cfg);
+  vector<BasicBlock*> nodes = cfg->block_list();
+
+  nodes[0]->idom = nodes[0];
+  
+  for (int i = 1; i < nodes.size(); i++) {
+    int block_index = nodes_rpo[i];
+    BasicBlock* node = nodes[block_index];
+    if (node->preds.size() == 2 && node->preds[1]->idom != NULL) {
+      node->idom = intersect(node->preds[0], node->preds[1]);
+      node->idom->children.push_back(node);
+    } else {
+      node->idom = node->preds[0];
+      node->idom->children.push_back(node);
+    }  
+  }
+  
+  for (vector<BasicBlock*>::iterator it = nodes.begin(); it != nodes.end(); it++) {
+    sort((*it)->children.begin(), (*it)->children.end(), compare_blocks);
+  }
 }
