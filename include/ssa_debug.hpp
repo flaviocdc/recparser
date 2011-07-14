@@ -5,6 +5,7 @@
 
 void print_dom_tree(CFG* cfg);
 void print_dom_frontier(CFG* cfg);
+void print_vars(CFG* cfg);
 void print_dom_debug(vector<CFG*> cfg);
 
 #endif

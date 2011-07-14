@@ -96,6 +96,7 @@ void generate_cfg_comm(CFG* cfg, Command* cmd) {
     case COMMAND_ATTR: {
       CFG_Attr* cfg_attr = create_cfg_attr(cfg, cmd);
       cfg->working_block->add_op(cfg_attr);
+      cfg->working_block->add_var(cfg_attr->lvalue);
       break;
     }
     case COMMAND_FUNCALL: {
@@ -153,6 +154,9 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
     case EXP_VAR: {
       CFG_Var* cfg_var = new CFG_Var(ast_exp->u.var->name);
       cfg_exp = new CFG_SimpleOp(cfg_var);
+      
+      cfg->working_block->add_var(cfg_var);
+      
       break;
     }
     case EXP_FUNCALL: {
