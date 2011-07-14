@@ -15,22 +15,6 @@ inline ostream& operator<<(ostream& o, const vector<T>& v) {
   return o;
 }
 
-/**
-def rpo(nodes):
-    marks = {}
-    n = [len(nodes)-1]
-    rpo = [0] * len(nodes)
-    def bfs_visit(node):
-        marks[node] = True
-        for child in node.succs:
-            if not marks.get(child, False):
-                bfs_visit(child)
-        node.rpo = n[0]
-        rpo[node.rpo] = node
-        n[0] -= 1
-    bfs_visit(nodes[0])
-    return rpo
-*/
 void rpo(CFG* cfg) {
   map<int, bool> marks;
   
@@ -39,19 +23,28 @@ void rpo(CFG* cfg) {
   int n = size - 1;
   vector<int> rpo(size, 0);
   
-  bfs(cfg->block_list().at(0), marks, n, rpo);
+  bfs(cfg->block_list().at(0), marks, n, rpo, " ");
   
   cout << rpo << endl;
 }
 
-void bfs(BasicBlock* node, map<int, bool> &marks, int &n, vector<int> &rpo) {
+void bfs(BasicBlock* node, map<int, bool> &marks, int &n, vector<int> &rpo, string ident) {
+  //cout << ident << "Visitando " << node->str() << endl;
   marks[node->name] = true;
+  
+  //cout << ident << "Entrando no loop de sucss" << endl;
   for (vector<BasicBlock*>::iterator it = node->succs.begin(); it != node->succs.end(); it++) {
-    if (marks.find((*it)->name) != marks.end()) {
-      bfs(*it, marks, n, rpo);
+    int block_index = (*it)->name;
+    
+    //cout << ident << (*it)->str() << " has been marked? " << (marks.count(block_index) != 0) << endl;
+    if ( marks.count(block_index) == 0 ) {
+      bfs(*it, marks, n, rpo, ident + " ");
     }
   }
+  
   node->rpo = n;
+  //cout << ident << "node.rpo = " << node->str() << "." << node->rpo << endl;
   rpo[node->rpo] = node->name;
   n -= 1;
+  //cout << ident << "'n' == " << n << endl;
 }
