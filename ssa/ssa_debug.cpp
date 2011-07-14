@@ -39,8 +39,8 @@ void print_vars(CFG* cfg) {
   for (int i = 0; i < cfg->block_list().size(); i++) {
     BasicBlock* block = cfg->block_list()[i];
     cout << block->str() << ": ";
-    for (set<CFG_Var*>::iterator child = block->vars.begin(); child != block->vars.end(); child++) {
-      cout << (*child)->str() << " ";
+    for (set<string>::iterator child = block->vars.begin(); child != block->vars.end(); child++) {
+      cout << (*child) << " ";
     }
     cout << endl;
   }

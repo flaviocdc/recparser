@@ -14,7 +14,7 @@ void BasicBlock::add_op(CFG_Command* cmd) {
 }
 
 void BasicBlock::add_var(CFG_Var* var) {
-  vars.insert(var);
+  vars.insert(var->str());
 }
 
 void BasicBlock::br(BasicBlock* block) {
@@ -50,8 +50,4 @@ void CFG::add_block(BasicBlock* block) {
 
 vector<BasicBlock*> CFG::block_list() {
   return blocks;
-}
-
-bool CFG_Var_Comparator::operator() (const CFG_Var* lhs, const CFG_Var* rhs) const {
-  return lhs->name < rhs->name;
 }

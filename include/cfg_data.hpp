@@ -34,10 +34,6 @@ struct CFG_Var : public CFG_NamedMember {
   string str();
 };
 
-struct CFG_Var_Comparator {
-  bool operator() (const CFG_Var* lhs, const CFG_Var* rhs) const;
-};
-
 class BasicBlock {
   public:
 
@@ -45,7 +41,7 @@ class BasicBlock {
     vector<CFG_Command*> ops;
     vector<BasicBlock*> succs;
     vector<BasicBlock*> preds;
-    set<CFG_Var*, CFG_Var_Comparator> vars;
+    set<string> vars;
     
     vector<BasicBlock*> children;
     BasicBlock* idom;

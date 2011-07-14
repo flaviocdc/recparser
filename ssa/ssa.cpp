@@ -107,4 +107,19 @@ void dom_frontier(CFG* cfg) {
   }
 }
 
-
+void add_phis(CFG* cfg) {
+  multimap<string, BasicBlock*> blocks_vars;
+  
+  set<string> globals;
+  
+  for (int i = 0; i < cfg->block_list().size(); i++) {
+    set<string> locals;
+    
+    BasicBlock* block = cfg->block_list()[i];
+    
+    for (int j = 0; j < block->ops; j++) {
+      
+    }
+  }
+  
+}
