@@ -29,10 +29,10 @@ void rpo(CFG* cfg) {
 }
 
 void bfs(BasicBlock* node, map<int, bool> &marks, int &n, vector<int> &rpo) {
-  marks[node->name] = true;
+  marks[node->index] = true;
   
   for (vector<BasicBlock*>::iterator it = node->succs.begin(); it != node->succs.end(); it++) {
-    int block_index = (*it)->name;
+    int block_index = (*it)->index;
     
     if ( marks.count(block_index) == 0 ) {
       bfs(*it, marks, n, rpo);
@@ -40,6 +40,7 @@ void bfs(BasicBlock* node, map<int, bool> &marks, int &n, vector<int> &rpo) {
   }
   
   node->rpo = n;
-  rpo[node->rpo] = node->name;
+  rpo[n] = node->index;
+  
   n -= 1;
 }

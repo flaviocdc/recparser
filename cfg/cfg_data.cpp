@@ -37,7 +37,7 @@ void BasicBlock::ret(CFG_Var* var) {
 void CFG::add_block(BasicBlock* block) {
   counter++;
 
-  block->name = counter;
+  block->index = counter;
 
   blocks.push_back(block);
   

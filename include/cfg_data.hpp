@@ -36,7 +36,7 @@ struct CFG_Var : public CFG_NamedMember {
 class BasicBlock {
   public:
 
-    int name;
+    int index;
     vector<CFG_Command*> ops;
     vector<BasicBlock*> succs;
     vector<BasicBlock*> preds;
@@ -50,7 +50,7 @@ class BasicBlock {
     // phis
     // vars
 
-    BasicBlock() : name(0),
+    BasicBlock() : index(0),
                    ops(),
                    succs(),
                    preds(),
