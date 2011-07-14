@@ -23,28 +23,23 @@ void rpo(CFG* cfg) {
   int n = size - 1;
   vector<int> rpo(size, 0);
   
-  bfs(cfg->block_list().at(0), marks, n, rpo, " ");
+  bfs(cfg->block_list().at(0), marks, n, rpo);
   
   cout << rpo << endl;
 }
 
-void bfs(BasicBlock* node, map<int, bool> &marks, int &n, vector<int> &rpo, string ident) {
-  //cout << ident << "Visitando " << node->str() << endl;
+void bfs(BasicBlock* node, map<int, bool> &marks, int &n, vector<int> &rpo) {
   marks[node->name] = true;
   
-  //cout << ident << "Entrando no loop de sucss" << endl;
   for (vector<BasicBlock*>::iterator it = node->succs.begin(); it != node->succs.end(); it++) {
     int block_index = (*it)->name;
     
-    //cout << ident << (*it)->str() << " has been marked? " << (marks.count(block_index) != 0) << endl;
     if ( marks.count(block_index) == 0 ) {
-      bfs(*it, marks, n, rpo, ident + " ");
+      bfs(*it, marks, n, rpo);
     }
   }
   
   node->rpo = n;
-  //cout << ident << "node.rpo = " << node->str() << "." << node->rpo << endl;
   rpo[node->rpo] = node->name;
   n -= 1;
-  //cout << ident << "'n' == " << n << endl;
 }
