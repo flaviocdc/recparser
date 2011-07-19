@@ -99,3 +99,24 @@ string BasicBlock::str() {
   ss << "B" << index;
   return ss.str();
 }
+
+
+string CFG_Phis::str() {
+  typedef multimap<string, pair<string, BasicBlock*> > mm;
+  typedef mm::iterator mm_iter;
+  stringstream ss;
+  
+  string current_var = "";
+  
+  for (mm_iter it = block->phis.begin(); it != block->phis.end(); it++) {
+    if (current_var != (*it).first) {
+      current_var = (*it).first;
+      ss << current_var << " = phi";
+    }
+
+    pair<string, BasicBlock*> pair = (*it).second;
+    ss << "[" << pair.first << "," << pair.second->str()   << "]";
+  }
+  
+  return ss.str();
+}
