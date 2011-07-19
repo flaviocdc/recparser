@@ -38,9 +38,23 @@ void BasicBlock::ret(CFG_Var* var) {
   has_return = true;
 }
 
+bool BasicBlock::add_phi(string name) {
+  if (phis.count(name) == 0) {
+    for (vector<BasicBlock*>::iterator it = preds.begin(); it < preds.end(); it++) {
+      pair<string, BasicBlock*> pair(name, (*it));
+      phis.insert(make_pair(name, pair));
+    }
+    return true;
+  }
+
+  return false;
+}
+
 void CFG::add_block(BasicBlock* block) {
   block->index = counter;
   counter++;
+
+  block->add_op(new CFG_Phis(block));
 
   blocks.push_back(block);
   
@@ -50,4 +64,24 @@ void CFG::add_block(BasicBlock* block) {
 
 vector<BasicBlock*> CFG::block_list() {
   return blocks;
+}
+
+string CFG_Phis::str() {
+  typedef multimap<string, pair<string, BasicBlock*> > mm;
+  typedef mm::iterator mm_iter;
+  stringstream ss;
+  
+  string current_var = "";
+  
+  for (mm_iter it = block->phis.begin(); it != block->phis.end(); it++) {
+    if (current_var != (*it).first) {
+      current_var = (*it).first;
+      ss << current_var << " = phi";
+    }
+
+    pair<string, BasicBlock*> pair = (*it).second;
+    ss << "[" << pair.first << "," << pair.second->str()   << "]";
+  }
+  
+  return ss.str();
 }

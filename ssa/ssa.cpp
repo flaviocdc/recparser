@@ -176,11 +176,17 @@ void add_phis(CFG* cfg) {
     
     worklist.insert(worklist.end(), aux.begin(), aux.end());
     cout << "Worklist: " << worklist << endl;
+    
     while (worklist.size() > 0) {
+      // pop the block
       BasicBlock* block = *worklist.begin();
       worklist.erase(worklist.begin());
-      for (set<BasicBlock*>::iterator it = block->frontier.begin(); it != block->frontier.end(); it++) {
-        cout << "Talvez phi" << endl;
+      
+      for (set<BasicBlock*>::iterator it = block->frontier.begin(); it != block->frontier.end(); ++it) {
+        BasicBlock* frontier = (*it);
+        if (frontier->add_phi(name)) {
+          worklist.push_back(frontier);
+        }
       }
     }
   }

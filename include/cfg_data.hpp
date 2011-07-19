@@ -69,6 +69,8 @@ class BasicBlock {
     void br(BasicBlock* block);
     void brc(BasicBlock *trueBlock, BasicBlock *falseBlock, CFG_Var* cond);
     void ret(CFG_Var* var);
+    
+    bool add_phi(string name);
 
     string str();
     friend ostream &operator<<( ostream &out, BasicBlock &block );
@@ -192,6 +194,14 @@ struct CFG_FuncallCommand : public CFG_Command {
   
   CFG_FuncallCommand(string paramName) : name(paramName), params() {};
 
+  string str();
+};
+
+struct CFG_Phis : public CFG_Command {
+  BasicBlock* block;
+  
+  CFG_Phis(BasicBlock* paramBlock) : block(paramBlock) { };
+  
   string str();
 };
 
