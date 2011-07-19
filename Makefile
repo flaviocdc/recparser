@@ -29,7 +29,7 @@ cfg-dummy: $(CXX_OBJ) $(C_OBJ) out/cfg_output_dummy.o
 
 # Gerandor o lexer
 $(AST_DIR)/lex.yy.c: monga.l
-	lex -o $(AST_DIR)/lex.yy.c monga.l
+	lex -o $@ $<
 
 # Compilando arquivos do gerador de AST
 $(OUT)/%.o: $(AST_DIR)/%.c $(DEPS)

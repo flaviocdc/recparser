@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iostream>
 #include <set>
+#include <map>
 
 using namespace std;
 
@@ -50,8 +51,8 @@ class BasicBlock {
     
     bool has_return;
     
-    // phis
-
+    multimap<string, pair<string, BasicBlock*> > phis;
+    
     BasicBlock() : index(0),
                    ops(),
                    succs(),
@@ -60,6 +61,7 @@ class BasicBlock {
                    idom(NULL),
                    frontier(),
                    vars(),
+                   phis(),
                    has_return(false) { };
 
     void add_op(CFG_Command* cmd);   

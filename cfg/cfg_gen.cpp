@@ -46,13 +46,13 @@ void iterate_declrs(DeclrListNode* node) {
 }
 
 void print_globals() {
-  for (vector<CFG_Attr*>::iterator it = globals.begin(); it != globals.end(); it++) {
+  for (vector<CFG_Attr*>::iterator it = globals.begin(); it < globals.end(); it++) {
     cout << (*it)->str() << endl;
   }
 }
 
 void print_cfgs() {
-  for (vector<CFG*>::iterator it = cfgs.begin(); it != cfgs.end(); it++) {
+  for (vector<CFG*>::iterator it = cfgs.begin(); it < cfgs.end(); it++) {
     cout << *(*it) << endl;
   }
 }
@@ -71,6 +71,7 @@ CFG* generate_cfg(Declr* declr) {
     
     dom_tree(cfg);
     dom_frontier(cfg);
+    add_phis(cfg);
     
     return cfg;
   }
