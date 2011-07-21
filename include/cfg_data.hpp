@@ -29,7 +29,7 @@ struct CFG_NamedMember : public CFG_Member {
 struct CFG_Var : public CFG_NamedMember {
   int index;
 
-  CFG_Var(string paramName) : CFG_NamedMember(paramName), index(0) {}; 
+  CFG_Var(string paramName) : CFG_NamedMember(paramName), index(-1) {}; 
   CFG_Var(string paramName, int paramIndex) : CFG_NamedMember(paramName), index(paramIndex) {}; 
 
   string str();

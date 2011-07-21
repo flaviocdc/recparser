@@ -5,6 +5,7 @@ using namespace std;
 #include<iostream>
 #include<algorithm>
 #include<set>
+#include<cstdlib>
 
 #include "cfg_data.hpp"
 #include "ssa.hpp"
@@ -122,9 +123,9 @@ bool inspect_cfg_simple_op(vars_blocks_map &blocks_vars, string_set &globals, st
     CFG_Var *var = dynamic_cast<CFG_Var*>(simple->exp);
     
     if (var) {
-      string name = var->str();
+      string name = var->name;
       if (blocks_vars.count(name) && locals.count(name) == 0) {
-        cout << "Global found: " << name << endl;
+        //cout << "Global found: " << name << endl;
         globals.insert(name);
       }
     }
@@ -147,7 +148,7 @@ void add_phis(CFG* cfg) {
   
   string_set globals;
   
-  cout << "Processing Globals..." << endl;
+  //cout << "Processing Globals..." << endl;
   for (int i = 0; i < cfg->block_list().size(); i++) {
     string_set locals;
     
@@ -162,8 +163,8 @@ void add_phis(CFG* cfg) {
         inspect_cfg_simple_op(blocks_vars, globals, locals, attr->rvalue);
         inspect_cfg_bin_op(blocks_vars, globals, locals, attr->rvalue);
         
-        locals.insert(attr->lvalue->str());
-        blocks_vars.insert(pair<string, BasicBlock*>(attr->lvalue->str(), block));
+        locals.insert(attr->lvalue->name);
+        blocks_vars.insert(make_pair(attr->lvalue->name, block));
       }
     }
   }
@@ -175,7 +176,6 @@ void add_phis(CFG* cfg) {
     vector<BasicBlock*> aux = *get_blocks_for_var(blocks_vars, name);
     
     worklist.insert(worklist.end(), aux.begin(), aux.end());
-    cout << "Worklist: " << worklist << endl;
     
     while (worklist.size() > 0) {
       // pop the block
@@ -204,4 +204,80 @@ vector<BasicBlock*>* get_blocks_for_var(vars_blocks_map &blocks_vars, string nam
   }
 
   return list;
+}
+
+void ssa_rename(CFG* cfg) {
+  map<string, int> counter;
+  multimap<string, int> stack;
+  
+  vector<BasicBlock*> blocks = cfg->block_list();
+  
+  for (vector<BasicBlock*>::iterator it = blocks.begin(); it < blocks.end(); it++) {
+    BasicBlock* block = (*it);
+    
+    for (set<string>::iterator vars = block->vars.begin(); vars != block->vars.end(); vars++) {
+      string name = (*vars);
+      if (counter.count(name) == 0) {
+        counter.insert(make_pair(name, 0));
+      }
+    }
+  }
+  
+  rename(blocks[0], counter, stack);
+}
+
+void rename(BasicBlock* block, map<string, int> &counter, multimap<string, int> &stack) {
+  typedef multimap<string, pair<string, BasicBlock*> >::iterator phis_iter;
+  
+  string new_var(""), current_var("");
+  
+  for (phis_iter it = block->phis.begin(); it != block->phis.end();) {
+    string var = (*it).first;
+    
+    if (var != current_var) {
+      stringstream ss;
+      ss << var << "_" << new_name(var, counter, stack);
+      new_var = ss.str();
+    }
+    
+    pair<string, BasicBlock*> pair = (*it).second;
+    
+    block->phis.erase(it++);
+    block->phis.insert(make_pair(new_var, pair));
+  }
+  
+  for (vector<CFG_Command*>::iterator it = block->ops.begin(); it < block->ops.end(); it++) {
+    CFG_Command *op = (*it);
+    CFG_Attr* attr = dynamic_cast<CFG_Attr*>(op);
+    if (attr) {
+      CFG_Var* cfg_var = attr->lvalue;
+      cfg_var->index = new_name(cfg_var->name, counter, stack);
+      
+      rename_simple_op(attr->rvalue, stack);
+    }
+  }
+}
+
+void rename_simple_op(CFG_Exp* &exp, multimap<string, int> &stack) {
+  typedef multimap<string, int>::iterator stack_iter;
+
+  CFG_SimpleOp* simple = dynamic_cast<CFG_SimpleOp*>(exp);
+  if (simple) {
+    CFG_Var* source = dynamic_cast<CFG_Var*>(simple->exp);
+    
+    if (source) {
+      pair<stack_iter, stack_iter> range = stack.equal_range(source->name);
+      int index = (*range.second).second;
+      source->index = index;       
+    }
+  }
+}
+
+int new_name(string var_name, map<string, int> &counter, multimap<string, int> &stack) {
+  int i = counter[var_name];
+  counter[var_name] += 1;
+  
+  stack.insert(make_pair(var_name, i));
+  
+  return i;
 }

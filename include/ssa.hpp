@@ -19,4 +19,11 @@ bool inspect_cfg_bin_op(vars_blocks_map &blocks_vars, string_set &globals, strin
 void add_phis(CFG* cfg);
 vector<BasicBlock*>* get_blocks_for_var(vars_blocks_map &blocks_vars, string name);
 
+void ssa_rename(CFG* cfg);
+
+void rename(BasicBlock* block, map<string, int> &counter, multimap<string, int> &stack);
+int new_name(string var_name, map<string, int> &counter, multimap<string, int> &stack);
+
+void rename_simple_op(CFG_Exp* &exp, multimap<string, int> &stack);
+
 #endif

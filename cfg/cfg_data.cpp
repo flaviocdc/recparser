@@ -14,7 +14,7 @@ void BasicBlock::add_op(CFG_Command* cmd) {
 }
 
 void BasicBlock::add_var(CFG_Var* var) {
-  vars.insert(var->str());
+  vars.insert(var->name);
 }
 
 void BasicBlock::br(BasicBlock* block) {

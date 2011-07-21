@@ -72,6 +72,7 @@ CFG* generate_cfg(Declr* declr) {
     dom_tree(cfg);
     dom_frontier(cfg);
     add_phis(cfg);
+    ssa_rename(cfg);
     
     return cfg;
   }

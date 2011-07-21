@@ -11,8 +11,10 @@ string CFG_NamedMember::str() {
 string CFG_Var::str() {
   stringstream ss;
   
-  ss << CFG_NamedMember::str() << "_" << index;
-
+  ss << CFG_NamedMember::str();
+  if (index != -1)
+    ss << "_" << index;
+    
   return ss.str();
 }
 
