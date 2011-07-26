@@ -51,7 +51,7 @@ class BasicBlock {
     
     bool has_return;
     
-    multimap<string, pair<string, BasicBlock*> > phis;
+    map<string, set<pair<string, BasicBlock*> > > phis;
     
     BasicBlock() : index(0),
                    ops(),

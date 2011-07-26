@@ -208,7 +208,7 @@ vector<BasicBlock*>* get_blocks_for_var(vars_blocks_map &blocks_vars, string nam
 
 void ssa_rename(CFG* cfg) {
   map<string, int> counter;
-  multimap<string, int> stack;
+  stacks_map stack;
   
   vector<BasicBlock*> blocks = cfg->block_list();
   
@@ -220,33 +220,27 @@ void ssa_rename(CFG* cfg) {
       if (counter.count(name) == 0) {
         counter.insert(make_pair(name, 0));
       }
+      if (stack.count(name) == 0) {
+        stack.insert(make_pair(name, deque<int>()));
+      }
     }
   }
   
   rename(blocks[0], counter, stack);
 }
 
-void rename(BasicBlock* block, map<string, int> &counter, multimap<string, int> &stack) {
-  typedef multimap<string, pair<string, BasicBlock*> >::iterator phis_iter;
-  
-  string new_var(""), current_var("");
+void rename(BasicBlock* block, map<string, int> &counter, stacks_map &stack) {
+  typedef map<string, set<pair<string, BasicBlock*> > >::iterator phis_iter;
   
   for (phis_iter it = block->phis.begin(); it != block->phis.end();) {
     string var = (*it).first;
-    cout << "var == " << var << endl;
-
-    if (var != current_var) {
-      stringstream ss;
-      ss << var << "_" << new_name(var, counter, stack);
-      new_var = ss.str();
-      cout << "new_var == " << new_var << endl;
-      current_var = var;
-    }
+    set<pair<string, BasicBlock*> > aux = (*it).second;
     
-    pair<string, BasicBlock*> pair = (*it).second;
+    stringstream ss;
+    ss << var << "_" << new_name(var, counter, stack);
     
     block->phis.erase(it++);
-    block->phis.insert(make_pair(new_var, pair));
+    block->phis.insert(make_pair(ss.str(), aux));    
   }
   
   for (vector<CFG_Command*>::iterator it = block->ops.begin(); it < block->ops.end(); it++) {
@@ -274,7 +268,7 @@ void rename(BasicBlock* block, map<string, int> &counter, multimap<string, int> 
   }
 }
 
-void rename_binary_op(CFG_Exp* &exp, multimap<string, int> &stack) {
+void rename_binary_op(CFG_Exp* &exp, stacks_map &stack) {
   CFG_BinaryOp* binop = dynamic_cast<CFG_BinaryOp*>(exp);
   if (binop) {
     CFG_Exp* e1 = dynamic_cast<CFG_Exp*>(binop->e1);
@@ -285,26 +279,32 @@ void rename_binary_op(CFG_Exp* &exp, multimap<string, int> &stack) {
   }
 }
 
-void rename_simple_op(CFG_Exp* &exp, multimap<string, int> &stack) {
-  typedef multimap<string, int>::iterator stack_iter;
+void rename_simple_op(CFG_Exp* &exp, stacks_map &stack) {
+  typedef stacks_map::iterator stack_iter;
 
   CFG_SimpleOp* simple = dynamic_cast<CFG_SimpleOp*>(exp);
   if (simple) {
     CFG_Var* source = dynamic_cast<CFG_Var*>(simple->exp);
     
     if (source) {
-      pair<stack_iter, stack_iter> range = stack.equal_range(source->name);
-      int index = (*range.second).second;
+      stack_iter it = stack.find(source->name);
+      deque<int> aux = (*it).second;
+
+      int index = aux.back();      
+      
       source->index = index;       
     }
   }
 }
 
-int new_name(string var_name, map<string, int> &counter, multimap<string, int> &stack) {
+int new_name(string var_name, map<string, int> &counter, stacks_map &stack) {
   int i = counter[var_name];
   counter[var_name] += 1;
   
-  stack.insert(make_pair(var_name, i));
+  deque<int> aux = stack[var_name]; 
+  aux.push_back(i);
+  
+  stack[var_name] = aux;
   
   return i;
 }

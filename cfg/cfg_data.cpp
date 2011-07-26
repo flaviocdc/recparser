@@ -40,10 +40,13 @@ void BasicBlock::ret(CFG_Var* var) {
 
 bool BasicBlock::add_phi(string name) {
   if (phis.count(name) == 0) {
+    set<pair<string, BasicBlock*> > aux;
+    
     for (vector<BasicBlock*>::iterator it = preds.begin(); it < preds.end(); it++) {
-      pair<string, BasicBlock*> pair(name, (*it));
-      phis.insert(make_pair(name, pair));
+      aux.insert(make_pair(name, *it));
     }
+    
+    phis.insert(make_pair(name, aux));
     return true;
   }
 

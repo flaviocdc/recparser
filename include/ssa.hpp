@@ -2,6 +2,7 @@
 #define _SSA_HPP
 
 #include<map>
+#include<deque>
 
 void bfs(BasicBlock* node, map<int, bool> &marks, int &n, vector<int> &rpo);
 vector<int> rpo(CFG* cfg);
@@ -21,10 +22,12 @@ vector<BasicBlock*>* get_blocks_for_var(vars_blocks_map &blocks_vars, string nam
 
 void ssa_rename(CFG* cfg);
 
-void rename(BasicBlock* block, map<string, int> &counter, multimap<string, int> &stack);
-int new_name(string var_name, map<string, int> &counter, multimap<string, int> &stack);
+typedef map<string, deque<int> > stacks_map;
 
-void rename_simple_op(CFG_Exp* &exp, multimap<string, int> &stack);
-void rename_binary_op(CFG_Exp* &exp, multimap<string, int> &stack);
+void rename(BasicBlock* block, map<string, int> &counter, stacks_map &stack);
+int new_name(string var_name, map<string, int> &counter, stacks_map &stack);
+
+void rename_simple_op(CFG_Exp* &exp, stacks_map &stack);
+void rename_binary_op(CFG_Exp* &exp, stacks_map &stack);
 
 #endif
