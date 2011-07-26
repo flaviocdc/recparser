@@ -25,5 +25,6 @@ void rename(BasicBlock* block, map<string, int> &counter, multimap<string, int> 
 int new_name(string var_name, map<string, int> &counter, multimap<string, int> &stack);
 
 void rename_simple_op(CFG_Exp* &exp, multimap<string, int> &stack);
+void rename_binary_op(CFG_Exp* &exp, multimap<string, int> &stack);
 
 #endif
