@@ -217,6 +217,7 @@ void ssa_rename(CFG* cfg) {
     
     for (set<string>::iterator vars = block->vars.begin(); vars != block->vars.end(); vars++) {
       string name = (*vars);
+      cout << "init : " << name << endl;
       if (counter.count(name) == 0) {
         counter.insert(make_pair(name, 0));
       }
@@ -230,18 +231,22 @@ void ssa_rename(CFG* cfg) {
 }
 
 void rename(BasicBlock* block, map<string, int> &counter, stacks_map &stack) {
-  typedef map<string, set<pair<string, BasicBlock*> > >::iterator phis_iter;
+  typedef phis_map::iterator phis_iter;
   
-  for (phis_iter it = block->phis.begin(); it != block->phis.end();) {
+  cout << "rename(" << block->str() << ")" << endl;
+  
+  phis_map new_phis;
+  for (phis_iter it = block->phis.begin(); it != block->phis.end(); it++) {
     string var = (*it).first;
+    cout << "tratando " << var << " = phi " << endl;
     set<pair<string, BasicBlock*> > aux = (*it).second;
     
     stringstream ss;
     ss << var << "_" << new_name(var, counter, stack);
-    
-    block->phis.erase(it++);
-    block->phis.insert(make_pair(ss.str(), aux));    
+    cout << "antigo phi " << var << " novo phi " << ss.str() << endl;
+    new_phis.insert(make_pair(ss.str(), aux));    
   }
+  block->phis = new_phis;
   
   for (vector<CFG_Command*>::iterator it = block->ops.begin(); it < block->ops.end(); it++) {
     CFG_Command *op = (*it);
@@ -256,15 +261,57 @@ void rename(BasicBlock* block, map<string, int> &counter, stacks_map &stack) {
   }
   
   for (vector<BasicBlock*>::iterator it = block->succs.begin(); it < block->succs.end(); it++) {
+    BasicBlock* succ = (*it);
+    cout << block->str() << " - Verificando sucessor: " << succ->str() << endl;
     
+    for (phis_map::iterator phis = succ->phis.begin(); phis != succ->phis.end();) {
+      typedef set<pair<string, BasicBlock*> > phi_pairs;
+      
+      phi_pairs pairs = (*phis).second;
+      phi_pairs new_pairs;
+      
+      for (phi_pairs::iterator phi_pair = pairs.begin(); phi_pair != pairs.end(); phi_pair++) {
+        pair<string, BasicBlock*> aux = (*phi_pair);
+        cout << "- phi["<<aux.first<<","<<aux.second->str()<<"]"<<endl;
+        if (aux.second->index == block->index) {
+          cout << "- block index match!" << endl;
+          if (stack[aux.first].empty()) {
+            stack[aux.first].push_back(0);
+            counter[aux.first] += 1;
+          }
+          
+          stringstream ss;
+          ss << aux.first << "_" << new_name(aux.first, counter, stack);
+          
+          aux = make_pair(ss.str(), aux.second);
+        }
+        
+        new_pairs.insert(aux);
+      }
+      
+      string var = (*phis).first;
+      
+      succ->phis.erase(phis++);
+      succ->phis.insert(make_pair(var, new_pairs));
+    }
   }
   
-  for (vector<BasicBlock*>::iterator it = block->children.begin(); it < block->succs.end(); it++) {
+  for (vector<BasicBlock*>::iterator it = block->children.begin(); it < block->children.end(); it++) {
     rename((*it), counter, stack);    
   }
   
   for (vector<CFG_Command*>::iterator it = block->ops.begin(); it < block->ops.end(); it++) {
-    
+    CFG_Attr* attr = dynamic_cast<CFG_Attr*>((*it));
+    if (attr) {
+      stack[attr->lvalue->name].pop_back();
+      cout << "popped from stack[" << attr->lvalue->name << "]" << endl;
+    }
+  }
+  
+  for (phis_map::iterator it = block->phis.begin(); it != block->phis.end(); it++) {
+    string var = (*it).first;
+    stack[var].pop_back();
+    cout << "popped from stack[" << var << "]" << endl;
   }
 }
 
@@ -287,10 +334,12 @@ void rename_simple_op(CFG_Exp* &exp, stacks_map &stack) {
     CFG_Var* source = dynamic_cast<CFG_Var*>(simple->exp);
     
     if (source) {
-      stack_iter it = stack.find(source->name);
-      deque<int> aux = (*it).second;
-
-      int index = aux.back();      
+      if (stack[source->name].empty()) {
+        stack[source->name].push_back(0);
+        counter[source->name] += 1
+      }
+      
+      int index = stack[source->name].back();      
       
       source->index = index;       
     }
@@ -300,11 +349,8 @@ void rename_simple_op(CFG_Exp* &exp, stacks_map &stack) {
 int new_name(string var_name, map<string, int> &counter, stacks_map &stack) {
   int i = counter[var_name];
   counter[var_name] += 1;
-  
-  deque<int> aux = stack[var_name]; 
-  aux.push_back(i);
-  
-  stack[var_name] = aux;
-  
+
+  stack[var_name].push_back(i);
+  cout << "new_name(" << var_name << ") == " << i << endl;
   return i;
 }

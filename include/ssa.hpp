@@ -23,6 +23,7 @@ vector<BasicBlock*>* get_blocks_for_var(vars_blocks_map &blocks_vars, string nam
 void ssa_rename(CFG* cfg);
 
 typedef map<string, deque<int> > stacks_map;
+typedef map<string, set<pair<string, BasicBlock*> > > phis_map;
 
 void rename(BasicBlock* block, map<string, int> &counter, stacks_map &stack);
 int new_name(string var_name, map<string, int> &counter, stacks_map &stack);
