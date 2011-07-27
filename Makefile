@@ -17,7 +17,7 @@ C_OBJ = $(patsubst %,$(OUT)/%,$(_C_OBJ))
 _CXX_OBJ = cfg_gen.o cfg_printer.o cfg_data.o ast_utils.o ssa.o ssa_debug.o
 CXX_OBJ = $(patsubst %,$(OUT)/%,$(_CXX_OBJ))
 
-all: compiler cfg-dummy
+all: compiler cfg-dummy cfg-llvm
 
 # Compilador
 compiler: $(C_OBJ) out/compiler.o
@@ -25,6 +25,9 @@ compiler: $(C_OBJ) out/compiler.o
 
 # CFG
 cfg-dummy: $(CXX_OBJ) $(C_OBJ) out/cfg_output_dummy.o
+	$(CXX) -o $@ $^ $(CXX_FLAGS)
+	
+cfg-llvm: $(CXX_OBJ) $(C_OBJ) out/cfg_output_llvm.o
 	$(CXX) -o $@ $^ $(CXX_FLAGS)
 
 # Gerandor o lexer
@@ -45,7 +48,7 @@ $(OUT)/%.o: $(SSA_DIR)/%.cpp $(DEPS)
 
 clean:
 	rm -f $(OUT)/*.o
-	rm -f compiler cfg-dummy
+	rm -f compiler cfg-dummy cfg-llvm
 	rm -f $(AST_DIR)/lex.yy.c
 
 .PHONY: clean
