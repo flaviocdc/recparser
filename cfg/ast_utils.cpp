@@ -17,27 +17,27 @@ string retrieve_operation_string(int op) {
   switch(op)
   {
     case TK_EQ: {
-      ss << "eq";
+      ss << "==";
       break;
     }
     case TK_LEQ: {
-      ss << "sle";
+      ss << "=<";
       break;
     }
     case TK_NEQ: {
-      ss << "ne";
+      ss << "!=";
       break;
     }
     case TK_GEQ: {
-      ss << "sge";
+      ss << ">=";
       break;
     }
     case '>': {
-      ss << "sgt";
+      ss << ">";
       break;
     }
     case '<': {
-      ss << "slt";
+      ss << "<";
       break;
     }
     default: {
