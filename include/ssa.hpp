@@ -27,6 +27,7 @@ typedef map<string, set<pair<string, BasicBlock*> > > phis_map;
 
 void rename(BasicBlock* block, map<string, int> &counter, stacks_map &stack);
 int new_name(string var_name, map<string, int> &counter, stacks_map &stack);
+string ssa_name(string var_name, stacks_map &stack);
 
 void rename_simple_op(CFG_Exp* &exp, stacks_map &stack);
 void rename_binary_op(CFG_Exp* &exp, stacks_map &stack);
