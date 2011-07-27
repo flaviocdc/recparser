@@ -181,12 +181,12 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       
       if (op == TK_AND) {
         CFG_Var* var = create_short_circuit_and(cfg, ast_exp);
-        cfg_exp = new CFG_SimpleOp(var);
+        cfg_exp = new CFG_SimpleOp(new CFG_Var(var->name));
         break;
       }
       if (op == TK_OR) {
         CFG_Var* var = create_short_circuit_or(cfg, ast_exp);
-        cfg_exp = new CFG_SimpleOp(var);
+        cfg_exp = new CFG_SimpleOp(new CFG_Var(var->name));
         break;
       }
 
@@ -323,7 +323,8 @@ CFG_Var* create_short_circuit_and(CFG* cfg, Exp* ast_exp) {
   
   cfg->working_block = trueBlock;
   
-  CFG_Attr* temp = new CFG_Attr(left->lvalue, create_cfg_exp(cfg, ast_exp->u.binop.e2));
+  CFG_Var* new_temp = new CFG_Var(left->lvalue->name);
+  CFG_Attr* temp = new CFG_Attr(new_temp, create_cfg_exp(cfg, ast_exp->u.binop.e2));
   trueBlock->add_op(temp);
   trueBlock->br(falseBlock);
   
@@ -346,7 +347,8 @@ CFG_Var* create_short_circuit_or(CFG* cfg, Exp* ast_exp) {
   
   cfg->working_block = trueBlock;
   
-  CFG_Attr* temp = new CFG_Attr(left->lvalue, create_cfg_exp(cfg, ast_exp->u.binop.e2));
+  CFG_Var* new_temp = new CFG_Var(left->lvalue->name);
+  CFG_Attr* temp = new CFG_Attr(new_temp, create_cfg_exp(cfg, ast_exp->u.binop.e2));
   trueBlock->add_op(temp);
   trueBlock->br(falseBlock);
   
@@ -360,6 +362,7 @@ CFG_Attr* create_temp_cfg_attr(CFG* cfg, CFG_Exp* exp) {
   CFG_Attr* attr = new CFG_Attr(var, exp);
   
   cfg->working_block->add_op(attr);
+  cfg->working_block->add_var(var);
   
   return attr;
 }
