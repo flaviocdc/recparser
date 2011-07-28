@@ -68,11 +68,8 @@ CFG* generate_cfg(Declr* declr) {
     while (node) {
       Declr* declr = node->declr;
       cfg->params.push_back(string(declr->u.name));
-      cout << cfg->name << " - inserindo parametro " << string(declr->u.name) << endl;
       node = node->next;
     }
-    cout << cfg->name << " - numero de params: " << cfg->params.size() << endl;
-    cout << cfg->name << " - params addr: " << &cfg->params << endl;
 
     if (block->comms) {
       BasicBlock* bb = create_basic_working_block(cfg);
@@ -438,5 +435,5 @@ int main(int argc, char **argv) {
   print_globals();
   print_cfgs();
   
-  print_dom_debug(cfgs);
+  //print_dom_debug(cfgs);
 }

@@ -15,7 +15,9 @@ ostream &operator<<( ostream &out, BasicBlock &block ) {
   
   vector<CFG_Command*>::iterator it;
   for ( it = block.ops.begin(); it < block.ops.end(); it++ ) {
-    out << "  " << (*it)->str() << endl;
+    string op = (*it)->str();
+    if (!op.empty())
+      out << "  " << op << endl;
   }
 
   return out;
@@ -24,19 +26,11 @@ ostream &operator<<( ostream &out, BasicBlock &block ) {
 ostream &operator<<( ostream &out, CFG &cfg ) {
   out << "define i32 @" << cfg.name << "(";
   
-  //cout << "params addr: " << &cfg.params << endl;
-  //cout << "cfg.params.size() == " << cfg.params.size() << endl;
-  /*for (int i = 0; i < cfg.params.size(); i++) {
-    out << "i32 %" << cfg.params[i];
+  for (int i = 0; i < cfg.params.size(); i++) {
+    out << "i32 %" << cfg.params[i] << "_0" ;
     if (i != cfg.params.size() - 1)
       out << ",";
-  }*/
-  for (vector<string>::iterator sit = cfg.params.begin(); sit < cfg.params.end(); sit++) {
-    out << "i32 %" << (*sit);
-   // if (i != cfg.params.size() - 1)
-      out << ",";
   }
-  
   out << ")" << endl;
 
   vector<BasicBlock*>::iterator it;
