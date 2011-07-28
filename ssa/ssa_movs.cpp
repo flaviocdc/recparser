@@ -40,14 +40,18 @@ bool ssa_remove_movs_attr(CFG_Command* cmd, map<string, CFG_Exp*> &replace_map) 
   if (attr) {
     CFG_SimpleOp* simple = dynamic_cast<CFG_SimpleOp*>(attr->rvalue);
     if (simple) {
+      
       lookup = replace_map.find(simple->str());
       
       if (lookup != replace_map.end()) {
         attr->rvalue = (*lookup).second;
       }
       
-      skip_op = true;
-      replace_map.insert(make_pair(attr->lvalue->str(), attr->rvalue));
+      CFG_Funcall* func = dynamic_cast<CFG_Funcall*>(simple->exp);
+      if (!func) {
+        skip_op = true;
+        replace_map.insert(make_pair(attr->lvalue->str(), attr->rvalue));
+      }
     }
     
     CFG_BinaryOp* binop = dynamic_cast<CFG_BinaryOp*>(attr->rvalue);

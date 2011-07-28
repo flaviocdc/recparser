@@ -175,7 +175,9 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
         expl = expl->next;
       }
       
-      cfg_exp = new CFG_SimpleOp(cfg_funcall);
+      CFG_Attr* temp_attr = create_temp_cfg_attr(cfg, new CFG_SimpleOp(cfg_funcall));
+      
+      cfg_exp = new CFG_SimpleOp(temp_attr->lvalue);
       break;
     }
     case EXP_BINOP: {
