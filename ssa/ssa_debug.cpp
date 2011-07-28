@@ -10,8 +10,8 @@ using namespace std;
 void print_dom_tree(CFG* cfg) {
   cout << "== dom_tree(" << cfg->name << ") ==" << endl;
   
-  for (int i = 0; i < cfg->block_list().size(); i++) {
-    BasicBlock* block = cfg->block_list()[i];
+  for (int i = 0; i < cfg->blocks.size(); i++) {
+    BasicBlock* block = cfg->blocks[i];
     cout << block->str() << ": ";
     for (vector<BasicBlock*>::iterator child = block->children.begin(); child != block->children.end(); child++) {
       cout << (*child)->str() << " ";
@@ -23,8 +23,8 @@ void print_dom_tree(CFG* cfg) {
 void print_dom_frontier(CFG* cfg) {
   cout << "== dom_frontier(" << cfg->name << ") ==" << endl;
   
-  for (int i = 0; i < cfg->block_list().size(); i++) {
-    BasicBlock* block = cfg->block_list()[i];
+  for (int i = 0; i < cfg->blocks.size(); i++) {
+    BasicBlock* block = cfg->blocks[i];
     cout << block->str() << ": ";
     for (set<BasicBlock*>::iterator child = block->frontier.begin(); child != block->frontier.end(); child++) {
       cout << (*child)->str() << " ";
@@ -36,8 +36,8 @@ void print_dom_frontier(CFG* cfg) {
 void print_vars(CFG* cfg) {
   cout << "== vars(" << cfg->name << ") ==" << endl;
   
-  for (int i = 0; i < cfg->block_list().size(); i++) {
-    BasicBlock* block = cfg->block_list()[i];
+  for (int i = 0; i < cfg->blocks.size(); i++) {
+    BasicBlock* block = cfg->blocks[i];
     cout << block->str() << ": ";
     for (set<string>::iterator child = block->vars.begin(); child != block->vars.end(); child++) {
       cout << (*child) << " ";

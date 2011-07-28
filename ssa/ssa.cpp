@@ -30,12 +30,12 @@ inline ostream& operator<<(ostream& o, const vector<BasicBlock*>& v) {
 vector<int> rpo(CFG* cfg) {
   map<int, bool> marks;
   
-  int size = cfg->block_list().size();
+  int size = cfg->blocks.size();
   
   int n = size - 1;
   vector<int> rpo(size, 0);
   
-  bfs(cfg->block_list().at(0), marks, n, rpo);
+  bfs(cfg->blocks.at(0), marks, n, rpo);
   
   return rpo;  
 }
@@ -77,7 +77,7 @@ bool compare_blocks(BasicBlock* b1, BasicBlock* b2) {
   
 void dom_tree(CFG* cfg) {
   vector<int> nodes_rpo = rpo(cfg);
-  vector<BasicBlock*> nodes = cfg->block_list();
+  vector<BasicBlock*> nodes = cfg->blocks;
 
   nodes[0]->idom = nodes[0];
   
@@ -99,8 +99,8 @@ void dom_tree(CFG* cfg) {
 }
 
 void dom_frontier(CFG* cfg) {
-  for (int i = 0; i < cfg->block_list().size(); i++) {
-    BasicBlock* node = cfg->block_list()[i];
+  for (int i = 0; i < cfg->blocks.size(); i++) {
+    BasicBlock* node = cfg->blocks[i];
     
     if (node->preds.size() > 1) {
     
@@ -149,10 +149,10 @@ void add_phis(CFG* cfg) {
   string_set globals;
   
   //cout << "Processing Globals..." << endl;
-  for (int i = 0; i < cfg->block_list().size(); i++) {
+  for (int i = 0; i < cfg->blocks.size(); i++) {
     string_set locals;
     
-    BasicBlock* block = cfg->block_list()[i];
+    BasicBlock* block = cfg->blocks[i];
     
     for (int j = 0; j < block->ops.size(); j++) {
       CFG_Command* op = block->ops[j];
@@ -209,7 +209,7 @@ void ssa_rename(CFG* cfg) {
   map<string, int> counter;
   stacks_map stack;
   
-  vector<BasicBlock*> blocks = cfg->block_list();
+  vector<BasicBlock*> blocks = cfg->blocks;
   
   for (vector<BasicBlock*>::iterator it = blocks.begin(); it < blocks.end(); it++) {
     BasicBlock* block = (*it);

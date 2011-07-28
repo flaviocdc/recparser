@@ -87,7 +87,6 @@ class CFG {
     CFG(string param_name) : name(param_name), blocks(), counter(0) { };
 
     void add_block(BasicBlock* block);
-    vector<BasicBlock*> block_list();
 
     friend ostream &operator<<( ostream &out, CFG &cfg );
 };

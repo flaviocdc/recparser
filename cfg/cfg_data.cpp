@@ -64,7 +64,3 @@ void CFG::add_block(BasicBlock* block) {
   if (blocks.size() == 1)
     working_block = block;
 }
-
-vector<BasicBlock*> CFG::block_list() {
-  return blocks;
-}
