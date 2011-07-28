@@ -1,6 +1,6 @@
 #include <map>
-#include <typeinfo>
 #include "cfg_data.hpp"
+#include "ssa_movs.hpp"
 
 using namespace std;
 
@@ -18,55 +18,9 @@ void ssa_remove_movs(CFG* cfg) {
       
       map<string, CFG_Exp*>::iterator lookup;
       
-      CFG_Attr* attr = dynamic_cast<CFG_Attr*>(cmd);
-      if (attr) {
-        CFG_SimpleOp* simple = dynamic_cast<CFG_SimpleOp*>(attr->rvalue);
-        if (simple) {
-          lookup = replace_map.find(simple->str());
-          
-          if (lookup != replace_map.end()) {
-            attr->rvalue = (*lookup).second;
-          }
-          
-          skip_op = true;
-          replace_map.insert(make_pair(attr->lvalue->str(), attr->rvalue));
-        }
-        
-        CFG_BinaryOp* binop = dynamic_cast<CFG_BinaryOp*>(attr->rvalue);
-        if (binop) {
-          lookup = replace_map.find(binop->e1->str());
-          if (lookup != replace_map.end()) {
-            binop->e1 = (*lookup).second;
-          }
-          
-          lookup = replace_map.find(binop->e2->str());
-          if (lookup != replace_map.end()) {
-            binop->e2 = (*lookup).second;
-          }
-        }
-      }
-
-      CFG_Return* ret = dynamic_cast<CFG_Return*>(cmd);
-      if (ret) {
-        lookup = replace_map.find(ret->retVal->str());
-        if (lookup != replace_map.end()) {
-          ret->retVal = (*lookup).second;
-        }
-      }
-
-      CFG_FuncallCommand* func = dynamic_cast<CFG_FuncallCommand*>(cmd);
-      if (func) {
-        vector<CFG_Member*> new_params;
-        for (vector<CFG_Member*>::iterator pit = func->params.begin(); pit < func->params.end(); pit++) {
-          lookup = replace_map.find((*pit)->str());
-          if (lookup != replace_map.end()) {
-            new_params.push_back((*lookup).second);
-          } else {
-            new_params.push_back((*pit));
-          }
-        }
-        func->params = new_params;
-      }
+      skip_op = ssa_remove_movs_attr(cmd, replace_map);
+      ssa_remove_movs_ret(cmd, replace_map);
+      ssa_remove_movs_funcall(cmd, replace_map);
       
       if (!skip_op) {
         new_ops.push_back(cmd);
@@ -74,5 +28,71 @@ void ssa_remove_movs(CFG* cfg) {
     }
     
     block->ops = new_ops;
+  }
+}
+
+bool ssa_remove_movs_attr(CFG_Command* cmd, map<string, CFG_Exp*> &replace_map) {
+  map<string, CFG_Exp*>::iterator lookup;
+
+  CFG_Attr* attr = dynamic_cast<CFG_Attr*>(cmd);
+  bool skip_op = false;
+  
+  if (attr) {
+    CFG_SimpleOp* simple = dynamic_cast<CFG_SimpleOp*>(attr->rvalue);
+    if (simple) {
+      lookup = replace_map.find(simple->str());
+      
+      if (lookup != replace_map.end()) {
+        attr->rvalue = (*lookup).second;
+      }
+      
+      skip_op = true;
+      replace_map.insert(make_pair(attr->lvalue->str(), attr->rvalue));
+    }
+    
+    CFG_BinaryOp* binop = dynamic_cast<CFG_BinaryOp*>(attr->rvalue);
+    if (binop) {
+      lookup = replace_map.find(binop->e1->str());
+      if (lookup != replace_map.end()) {
+        binop->e1 = (*lookup).second;
+      }
+      
+      lookup = replace_map.find(binop->e2->str());
+      if (lookup != replace_map.end()) {
+        binop->e2 = (*lookup).second;
+      }
+    }
+  }
+  
+  return skip_op;
+}
+
+void ssa_remove_movs_ret(CFG_Command* cmd, map<string, CFG_Exp*> &replace_map) {
+  map<string, CFG_Exp*>::iterator lookup;
+
+  CFG_Return* ret = dynamic_cast<CFG_Return*>(cmd);
+  if (ret) {
+    lookup = replace_map.find(ret->retVal->str());
+    if (lookup != replace_map.end()) {
+      ret->retVal = (*lookup).second;
+    }
+  }
+}
+
+void ssa_remove_movs_funcall(CFG_Command* cmd, map<string, CFG_Exp*> &replace_map) {
+  map<string, CFG_Exp*>::iterator lookup;
+
+  CFG_FuncallCommand* func = dynamic_cast<CFG_FuncallCommand*>(cmd);
+  if (func) {
+    vector<CFG_Member*> new_params;
+    for (vector<CFG_Member*>::iterator pit = func->params.begin(); pit < func->params.end(); pit++) {
+      lookup = replace_map.find((*pit)->str());
+      if (lookup != replace_map.end()) {
+        new_params.push_back((*lookup).second);
+      } else {
+        new_params.push_back((*pit));
+      }
+    }
+    func->params = new_params;
   }
 }
