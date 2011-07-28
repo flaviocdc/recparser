@@ -11,6 +11,10 @@ using namespace std;
 #include "cfg_data.hpp"
 
 ostream &operator<<( ostream &out, BasicBlock &block ) {
+  if (block.ops.size() == 1)
+    // bloco possui apenas uma operacao que eh o "placeholder" de um possivel phi.
+    return out;
+
   out << block.str() << ":" << endl;
   
   vector<CFG_Command*>::iterator it;
