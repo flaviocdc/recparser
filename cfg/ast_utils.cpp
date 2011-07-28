@@ -21,7 +21,7 @@ string retrieve_operation_string(int op) {
       break;
     }
     case TK_LEQ: {
-      ss << "=<";
+      ss << "<=";
       break;
     }
     case TK_NEQ: {
