@@ -50,6 +50,10 @@ bool ssa_remove_movs_attr(CFG_Command* cmd, map<string, CFG_Exp*> &replace_map) 
       }
       
       CFG_Funcall* func = dynamic_cast<CFG_Funcall*>(simple->exp);
+      if (func) {
+        func->params = ssa_remove_movs_funcall_params(func->params, replace_map);
+      }
+      
       if (!func) {
         skip_op = true;
         replace_map.insert(make_pair(attr->lvalue->str(), attr->rvalue));
@@ -86,21 +90,26 @@ void ssa_remove_movs_ret(CFG_Command* cmd, map<string, CFG_Exp*> &replace_map) {
 }
 
 void ssa_remove_movs_funcall(CFG_Command* cmd, map<string, CFG_Exp*> &replace_map) {
-  map<string, CFG_Exp*>::iterator lookup;
-
   CFG_FuncallCommand* func = dynamic_cast<CFG_FuncallCommand*>(cmd);
   if (func) {
-    vector<CFG_Member*> new_params;
-    for (vector<CFG_Member*>::iterator pit = func->params.begin(); pit < func->params.end(); pit++) {
-      lookup = replace_map.find((*pit)->str());
-      if (lookup != replace_map.end()) {
-        new_params.push_back((*lookup).second);
-      } else {
-        new_params.push_back((*pit));
-      }
-    }
-    func->params = new_params;
+    func->params = ssa_remove_movs_funcall_params(func->params, replace_map);
   }
+}
+
+vector<CFG_Member*> ssa_remove_movs_funcall_params(vector<CFG_Member*> params, map<string, CFG_Exp*> &replace_map) {
+  map<string, CFG_Exp*>::iterator lookup;
+
+  vector<CFG_Member*> new_params;
+  for (vector<CFG_Member*>::iterator pit = params.begin(); pit < params.end(); pit++) {
+    lookup = replace_map.find((*pit)->str());
+    if (lookup != replace_map.end()) {
+      new_params.push_back((*lookup).second);
+    } else {
+      new_params.push_back((*pit));
+    }
+  }
+  
+  return new_params;
 }
 
 void ssa_remove_movs_phis(BasicBlock* block, map<string, CFG_Exp*> &replace_map) {

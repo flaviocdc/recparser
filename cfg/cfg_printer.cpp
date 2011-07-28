@@ -15,7 +15,7 @@ ostream &operator<<( ostream &out, BasicBlock &block ) {
   
   vector<CFG_Command*>::iterator it;
   for ( it = block.ops.begin(); it < block.ops.end(); it++ ) {
-    out << "\t" << (*it)->str() << endl;
+    out << "  " << (*it)->str() << endl;
   }
 
   return out;
