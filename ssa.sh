@@ -2,6 +2,7 @@
 
 OUTPUT_DIR=tmp
 mkdir -p $OUTPUT_DIR
+rm -rf $OUTPUT_DIR/$1.*
 
 clang -O0 -S -emit-llvm -o $1.ll $1.c
 llvm-as -f -o $1.bc $1.ll
