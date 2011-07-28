@@ -22,7 +22,22 @@ ostream &operator<<( ostream &out, BasicBlock &block ) {
 }
 
 ostream &operator<<( ostream &out, CFG &cfg ) {
-  out << "--" << cfg.name << endl;
+  out << "define i32 @" << cfg.name << "(";
+  
+  //cout << "params addr: " << &cfg.params << endl;
+  //cout << "cfg.params.size() == " << cfg.params.size() << endl;
+  /*for (int i = 0; i < cfg.params.size(); i++) {
+    out << "i32 %" << cfg.params[i];
+    if (i != cfg.params.size() - 1)
+      out << ",";
+  }*/
+  for (vector<string>::iterator sit = cfg.params.begin(); sit < cfg.params.end(); sit++) {
+    out << "i32 %" << (*sit);
+   // if (i != cfg.params.size() - 1)
+      out << ",";
+  }
+  
+  out << ")" << endl;
 
   vector<BasicBlock*>::iterator it;
   

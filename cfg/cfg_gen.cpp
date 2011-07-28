@@ -63,6 +63,16 @@ CFG* generate_cfg(Declr* declr) {
 
   if (block) {
     CFG* cfg = new CFG(declr->u.func.name);
+    
+    DeclrListNode *node = declr->u.func.params;
+    while (node) {
+      Declr* declr = node->declr;
+      cfg->params.push_back(string(declr->u.name));
+      cout << cfg->name << " - inserindo parametro " << string(declr->u.name) << endl;
+      node = node->next;
+    }
+    cout << cfg->name << " - numero de params: " << cfg->params.size() << endl;
+    cout << cfg->name << " - params addr: " << &cfg->params << endl;
 
     if (block->comms) {
       BasicBlock* bb = create_basic_working_block(cfg);

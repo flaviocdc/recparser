@@ -80,11 +80,12 @@ class CFG {
   public:
     string name;
     vector<BasicBlock*> blocks;
+    vector<string> params;
     BasicBlock *working_block;
     
     int counter;
 
-    CFG(string param_name) : name(param_name), blocks(), counter(0) { };
+    CFG(string param_name) : name(param_name), blocks(), counter(0), params() { };
 
     void add_block(BasicBlock* block);
 
