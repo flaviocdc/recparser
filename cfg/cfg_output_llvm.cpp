@@ -22,9 +22,9 @@ string CFG_Var::str() {
 string CFG_Funcall::str() {
   stringstream ss;
 
-  ss << CFG_NamedMember::str() << "(";
+  ss << "call i32 @" << CFG_NamedMember::str() << "(";
   for (vector<CFG_Member*>::iterator it = params.begin(); it != params.end(); ++it) {
-    ss << "i32 " << (*it)->str() << ", ";
+    ss << "i32 " << (*it)->str() << ",";
   }
   
   string out = ss.str();
@@ -89,22 +89,22 @@ string CFG_Return::str() {
 
 string CFG_Branch::str() {
   stringstream ss;
-  ss << "br " << target->str();
+  ss << "br label %" << target->str();
   return ss.str();
 }
 
 string CFG_ConditionalBranch::str() {
   stringstream ss;
-  ss << "brc " << cond->str() << " " << trueBlock->str() << " " << falseBlock->str();
+  ss << "br i1 " << cond->str() << ", label %" << trueBlock->str() << ", label %" << falseBlock->str();
   return ss.str();
 }
 
 string CFG_FuncallCommand::str() {
   stringstream ss;
   
-  ss << name << "(";
+  ss << "call i32 @" << name << "(";
   for (vector<CFG_Member*>::iterator it = params.begin(); it != params.end(); ++it) {
-    ss << "i32 " << (*it)->str() << ", ";
+    ss << "i32 " << (*it)->str() << ",";
   }
   
   string out = ss.str();
@@ -133,7 +133,7 @@ string CFG_Phis::str() {
     string var = (*it).first;
     ms aux = (*it).second;
     
-    ss << var << " = phi";
+    ss << var << " = phi i32 ";
     
     for (ms::iterator pairs = aux.begin(); pairs != aux.end(); pairs++) {
       pair<string, BasicBlock*> p = (*pairs);

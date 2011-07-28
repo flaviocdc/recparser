@@ -26,8 +26,10 @@ void ssa_remove_movs(CFG* cfg) {
         new_ops.push_back(cmd);
       }
     }
-    
+        
     block->ops = new_ops;
+    
+    ssa_remove_movs_phis(block, replace_map);
   }
 }
 
@@ -100,3 +102,37 @@ void ssa_remove_movs_funcall(CFG_Command* cmd, map<string, CFG_Exp*> &replace_ma
     func->params = new_params;
   }
 }
+
+void ssa_remove_movs_phis(BasicBlock* block, map<string, CFG_Exp*> &replace_map) {
+  typedef set<pair<string, BasicBlock*> > pairs_set;
+  typedef map<string, pairs_set> phis_map;
+  
+  phis_map new_phis_map;
+  map<string, CFG_Exp*>::iterator lookup;
+  
+  for (vector<BasicBlock*>::iterator bit = block->succs.begin(); bit < block->succs.end(); bit++) {
+    BasicBlock* succ_block = (*bit);
+  
+    for (phis_map::iterator it = succ_block->phis.begin(); it != succ_block->phis.end(); it++) {
+      pairs_set pairs = (*it).second;
+      pairs_set new_pairs;
+      
+      for (pairs_set::iterator pit = pairs.begin(); pit != pairs.end(); pit++) {
+        pair<string, BasicBlock*> pair = (*pit);
+        
+        lookup = replace_map.find("%" + pair.first); // TODO HACK!
+        if (lookup != replace_map.end()) {
+          new_pairs.insert(make_pair((*lookup).second->str(), pair.second));
+        } else {
+          new_pairs.insert(pair);
+        }
+      }
+      
+      new_phis_map.insert(make_pair((*it).first, new_pairs));
+    }
+  
+    succ_block->phis = new_phis_map;
+  }
+  
+}
+
