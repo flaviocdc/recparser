@@ -258,6 +258,7 @@ void rename(BasicBlock* block, map<string, int> &counter, stacks_map &stack) {
       
       rename_simple_op(attr->rvalue, stack);
       rename_binary_op(attr->rvalue, stack);
+      //rename_conv_op(attr->rvalue, stack);
     }
   }
   
@@ -341,6 +342,13 @@ void rename_simple_op(CFG_Exp* &exp, stacks_map &stack) {
       //cout << "- alterando '" << source->name << "->index' ("<< source << ") de " << source->index << " para " << index << endl;
       source->index = index;       
     }
+  }
+}
+
+void rename_conv_op(CFG_Exp* &exp, stacks_map &stack) {
+  CFG_Conv* conv = dynamic_cast<CFG_Conv*>(exp);
+  if (conv) {
+    rename_simple_op(conv->exp, stack);
   }
 }
 

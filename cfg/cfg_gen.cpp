@@ -4,6 +4,8 @@
 #include<cstdlib>
 #include<iostream>
 
+#include "ast_utils.hpp"
+
 #include "cfg_data.hpp"
 #include "cfg_gen.hpp"
 
@@ -221,10 +223,16 @@ CFG_Exp* create_cfg_exp(CFG* cfg, Exp* ast_exp) {
       break;
     }
     case EXP_CONV: {
+      string exp_type = retrieve_type_name(ast_exp->type->type);
+      string conv_type = retrieve_type_name(ast_exp->u.conv.type);
+      
       CFG_Exp* exp = create_cfg_exp(cfg, ast_exp->u.conv.exp);
       CFG_Attr* attr = create_temp_cfg_attr(cfg, exp);
       
-      cfg_exp = new CFG_SimpleOp(attr->lvalue);
+      CFG_Conv* conv = new CFG_Conv(new CFG_SimpleOp(attr->lvalue), exp_type, conv_type);
+      CFG_Attr* attr_conv = create_temp_cfg_attr(cfg, conv);
+      
+      cfg_exp = new CFG_SimpleOp(attr_conv->lvalue);
       
       break;
     }

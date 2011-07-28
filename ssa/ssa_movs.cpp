@@ -50,7 +50,8 @@ bool ssa_remove_movs_attr(CFG_Command* cmd, map<string, CFG_Exp*> &replace_map) 
       }
       
       CFG_Funcall* func = dynamic_cast<CFG_Funcall*>(simple->exp);
-      if (!func) {
+      CFG_Conv* conv = dynamic_cast<CFG_Conv*>(simple->exp);
+      if (!func && !conv) {
         skip_op = true;
         replace_map.insert(make_pair(attr->lvalue->str(), attr->rvalue));
       }
@@ -132,7 +133,5 @@ void ssa_remove_movs_phis(BasicBlock* block, map<string, CFG_Exp*> &replace_map)
     }
   
     succ_block->phis = new_phis_map;
-  }
-  
+  } 
 }
-

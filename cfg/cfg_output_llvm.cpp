@@ -145,5 +145,22 @@ string CFG_Phis::str() {
 }
 
 string CFG_Conv::str() {
-  return "conv";
+  stringstream ss;
+  
+  //cout << "ltype: " << ltype << " - rtype: " << rtype << endl; 
+  //cout << "ltype match " << ((ltype == string("int")) && (rtype == string("char"))) << endl;
+  
+  if ((ltype == string("int")) && (rtype == string("char"))) {
+    ss << "sext i8 " << exp->str() << " to i32";
+    return ss.str();
+  }
+  
+  if ((ltype == string("char")) && (rtype == string("int"))) {
+    ss << "trunc i32 " << exp->str() << " to i8";
+    return ss.str();
+  }
+  
+  //cout << "## conversao invalida..." << endl;
+  
+  return exp->str();
 }
