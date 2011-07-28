@@ -7,5 +7,6 @@ using namespace std;
 #include<string>
 
 string retrieve_operation_string(int op);
+string retrieve_type_name(int token);
 
 #endif

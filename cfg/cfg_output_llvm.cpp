@@ -143,3 +143,7 @@ string CFG_Phis::str() {
   
   return ss.str();
 }
+
+string CFG_Conv::str() {
+  return "conv";
+}

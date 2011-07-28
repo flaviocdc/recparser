@@ -10,6 +10,8 @@ using namespace std;
 #define TK_GEQ	1015
 #define TK_AND	1016
 #define TK_OR		1017
+#define TK_TINT		1007
+#define TK_TCHAR	1009
 
 string retrieve_operation_string(int op) {
   stringstream ss;
@@ -47,4 +49,13 @@ string retrieve_operation_string(int op) {
   }
   
   return ss.str();
+}
+
+string retrieve_type_name(int token) {
+  if (token == TK_TINT)
+    return "int";
+  else if (token == TK_TCHAR)
+    return "char";
+  
+  return "int";
 }

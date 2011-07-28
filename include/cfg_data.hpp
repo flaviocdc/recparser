@@ -204,4 +204,17 @@ struct CFG_Phis : public CFG_Command {
   string str();
 };
 
+struct CFG_Conv : public CFG_Exp {
+  CFG_Exp* exp;
+  string ltype;
+  string rtype;
+  
+  CFG_Conv(CFG_Exp* paramExp, string paramLtype, string paramRtype) : exp(paramExp),
+                                                                      ltype(paramLtype),
+                                                                      rtype(paramRtype) { };
+
+  string str();
+  
+};
+
 #endif
