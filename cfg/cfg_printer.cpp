@@ -33,11 +33,13 @@ ostream &operator<<( ostream &out, CFG &cfg ) {
   }
   out << ")" << endl;
 
+  out << "{" << endl;
   vector<BasicBlock*>::iterator it;
   
   for ( it = cfg.blocks.begin(); it < cfg.blocks.end(); it++ ) {
     out << **it;
   }
 
+  out << "}" << endl;
   return out;
 }

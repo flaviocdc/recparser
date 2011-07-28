@@ -53,7 +53,7 @@ string CFG_BinaryOp::str() {
   } else if (str_op == ">") {
     ss << "icmp sgt i32 " << e1->str() << ", " << e2->str();
   } else if (str_op == "<") {
-    ss << "icmp sle i32 " << e1->str() << ", " << e2->str();
+    ss << "icmp slt i32 " << e1->str() << ", " << e2->str();
   } else if (str_op == "+") {
     ss << "add i32 " << e1->str() << ", " << e2->str();
   } else if (str_op == "-") {
