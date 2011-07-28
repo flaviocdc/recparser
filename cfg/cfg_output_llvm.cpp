@@ -24,7 +24,7 @@ string CFG_Funcall::str() {
 
   ss << CFG_NamedMember::str() << "(";
   for (vector<CFG_Member*>::iterator it = params.begin(); it != params.end(); ++it) {
-    ss << (*it)->str() << ",";
+    ss << "i32 " << (*it)->str() << ", ";
   }
   
   string out = ss.str();
@@ -84,7 +84,7 @@ string CFG_Attr::str() {
 }
 
 string CFG_Return::str() {
-  return "ret " + retVal->str();
+  return "ret i32 " + retVal->str();
 }
 
 string CFG_Branch::str() {
@@ -104,7 +104,7 @@ string CFG_FuncallCommand::str() {
   
   ss << name << "(";
   for (vector<CFG_Member*>::iterator it = params.begin(); it != params.end(); ++it) {
-    ss << (*it)->str() << ",";
+    ss << "i32 " << (*it)->str() << ", ";
   }
   
   string out = ss.str();
