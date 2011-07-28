@@ -74,7 +74,7 @@ CFG* generate_cfg(Declr* declr) {
     dom_frontier(cfg);
     add_phis(cfg);
     ssa_rename(cfg);
-    //ssa_remove_movs(cfg);
+    ssa_remove_movs(cfg);
     
     return cfg;
   }

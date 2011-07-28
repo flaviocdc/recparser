@@ -14,13 +14,12 @@ void ssa_remove_movs(CFG* cfg) {
     
     for (vector<CFG_Command*>::iterator it = block->ops.begin(); it < block->ops.end(); it++) {
       CFG_Command* cmd = (*it);
-      CFG_Attr* attr = dynamic_cast<CFG_Attr*>(cmd);
-      
-      map<string, CFG_Exp*>::iterator lookup;
       bool skip_op = false;
       
-      if (attr) {
+      map<string, CFG_Exp*>::iterator lookup;
       
+      CFG_Attr* attr = dynamic_cast<CFG_Attr*>(cmd);
+      if (attr) {
         CFG_SimpleOp* simple = dynamic_cast<CFG_SimpleOp*>(attr->rvalue);
         if (simple) {
           lookup = replace_map.find(simple->str());
@@ -45,8 +44,28 @@ void ssa_remove_movs(CFG* cfg) {
             binop->e2 = (*lookup).second;
           }
         }
-        
-        
+      }
+
+      CFG_Return* ret = dynamic_cast<CFG_Return*>(cmd);
+      if (ret) {
+        lookup = replace_map.find(ret->retVal->str());
+        if (lookup != replace_map.end()) {
+          ret->retVal = (*lookup).second;
+        }
+      }
+
+      CFG_FuncallCommand* func = dynamic_cast<CFG_FuncallCommand*>(cmd);
+      if (func) {
+        vector<CFG_Member*> new_params;
+        for (vector<CFG_Member*>::iterator pit = func->params.begin(); pit < func->params.end(); pit++) {
+          lookup = replace_map.find((*pit)->str());
+          if (lookup != replace_map.end()) {
+            new_params.push_back((*lookup).second);
+          } else {
+            new_params.push_back((*pit));
+          }
+        }
+        func->params = new_params;
       }
       
       if (!skip_op) {
