@@ -133,13 +133,16 @@ string CFG_Phis::str() {
     string var = (*it).first;
     ms aux = (*it).second;
     
-    ss << var << " = phi i32 ";
+    ss << "%" << var << " = phi i32 ";
     
     for (ms::iterator pairs = aux.begin(); pairs != aux.end(); pairs++) {
       pair<string, BasicBlock*> p = (*pairs);
-      ss << "[" << p.first << "," << p.second->str()   << "]";
+      ss << "[" << p.first << "," << "%" << p.second->str() << "],";
     }
   }
   
-  return ss.str();
+  string out = ss.str();
+  out = out.substr(0, out.size() - 1);
+
+  return out;
 }
