@@ -11,6 +11,7 @@ string CFG_NamedMember::str() {
 string CFG_Var::str() {
   stringstream ss;
   
+  ss << "%";
   ss << CFG_NamedMember::str();
   if (index != -1)
     ss << "_" << index;
@@ -41,8 +42,27 @@ string CFG_SimpleOp::str() {
 
 string CFG_BinaryOp::str() {
   stringstream ss;
-  
-  ss << e1->str() << " " + retrieve_operation_string(op) << " " << e2->str();
+  string str_op = retrieve_operation_string(op);
+
+  if (str_op == "==") {
+    ss << "icmp eq i32 " << e1->str() << ", " << e2->str();
+  } else if (str_op == "<=") {
+    ss << "icmp sle i32 " << e1->str() << ", " << e2->str();
+  } else if (str_op == ">=") {
+    ss << "icmp sge i32 " << e1->str() << ", " << e2->str();
+  } else if (str_op == ">") {
+    ss << "icmp sgt i32 " << e1->str() << ", " << e2->str();
+  } else if (str_op == "<") {
+    ss << "icmp sle i32 " << e1->str() << ", " << e2->str();
+  } else if (str_op == "+") {
+    ss << "add i32 " << e1->str() << ", " << e2->str();
+  } else if (str_op == "-") {
+    ss << "sub i32 " << e1->str() << ", " << e2->str();
+  } else if (str_op == "*") {
+    ss << "mul i32 " << e1->str() << ", " << e2->str();
+  } else if (str_op == "/") {
+    ss << "sdiv i32 " << e1->str() << ", " << e2->str();
+  }
   
   return ss.str();
 }

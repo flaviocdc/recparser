@@ -9,6 +9,7 @@
 
 #include "ssa.hpp"
 #include "ssa_debug.hpp"
+#include "ssa_movs.hpp"
 
 extern "C" {
   #include "decl.h"
@@ -73,6 +74,7 @@ CFG* generate_cfg(Declr* declr) {
     dom_frontier(cfg);
     add_phis(cfg);
     ssa_rename(cfg);
+    //ssa_remove_movs(cfg);
     
     return cfg;
   }
