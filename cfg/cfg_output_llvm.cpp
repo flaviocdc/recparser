@@ -130,19 +130,23 @@ string CFG_Phis::str() {
   stringstream ss;
   
   for (mm_iter it = block->phis.begin(); it != block->phis.end(); it++) {
+    stringstream phi;
     string var = (*it).first;
     ms aux = (*it).second;
     
-    ss << "%" << var << " = phi i32 ";
+    phi << "%" << var << " = phi i32 ";
     
     for (ms::iterator pairs = aux.begin(); pairs != aux.end(); pairs++) {
       pair<string, BasicBlock*> p = (*pairs);
-      ss << "[" << p.first << "," << "%" << p.second->str() << "],";
-    }
+      if(p.first[0] >= '0' && p.first[0] <= '9')
+        phi << "[" << p.first << "," << "%" << p.second->str() << "],";
+      else
+         phi << "[%" << p.first << "," << "%" << p.second->str() << "],";
+   }
+    string out = phi.str();
+    out = out.substr(0, out.size() - 1);
+    ss << out << "\n";
   }
   
-  string out = ss.str();
-  out = out.substr(0, out.size() - 1);
-
-  return out;
+  return ss.str();
 }

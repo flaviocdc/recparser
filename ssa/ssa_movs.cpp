@@ -4,12 +4,7 @@
 
 using namespace std;
 
-void ssa_remove_movs(CFG* cfg) {
-  map<string, CFG_Exp*> replace_map;
-
-  for (vector<BasicBlock*>::iterator bit = cfg->blocks.begin(); bit < cfg->blocks.end(); bit++) {
-    BasicBlock* block = (*bit);
-    
+void ssa_remove_mov(BasicBlock* block, map<string, CFG_Exp*> &replace_map) {
     vector<CFG_Command*> new_ops;
     
     for (vector<CFG_Command*>::iterator it = block->ops.begin(); it < block->ops.end(); it++) {
@@ -30,7 +25,15 @@ void ssa_remove_movs(CFG* cfg) {
     block->ops = new_ops;
     
     ssa_remove_movs_phis(block, replace_map);
-  }
+    for (vector<BasicBlock*>::iterator it = block->children.begin(); it < block->children.end(); it++) {
+      ssa_remove_mov((*it), replace_map);    
+    }
+}
+
+void ssa_remove_movs(CFG* cfg) {
+  map<string, CFG_Exp*> replace_map;
+
+  ssa_remove_mov(cfg->blocks[0], replace_map);
 }
 
 bool ssa_remove_movs_attr(CFG_Command* cmd, map<string, CFG_Exp*> &replace_map) {

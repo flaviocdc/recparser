@@ -308,8 +308,10 @@ void rename(BasicBlock* block, map<string, int> &counter, stacks_map &stack) {
   
   for (phis_map::iterator it = block->phis.begin(); it != block->phis.end(); it++) {
     string var = (*it).first;
-    stack[var].pop_back();
-    //cout << "popped from stack[" << var << "]" << endl;
+    string old_name = var.substr(0, var.find_first_of('_'));
+    
+    stack[old_name].pop_back();
+    //cout << "popped from stack[" << old_name << "]" << endl;
   }
 }
 
